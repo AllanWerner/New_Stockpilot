@@ -1,0 +1,62 @@
+@use '@angular/material' as mat;
+@use 'styles/tokens' as t;
+@use 'styles/theme' as theme;
+
+@include mat.core();
+@include mat.all-component-themes(theme.$sp-theme);
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: t.$sp-font-body;
+  background-color: t.$sp-bg;
+  color: t.$sp-text-primary;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.mat-toolbar,
+.mat-mdc-tab-label,
+button {
+  font-family: t.$sp-font-heading;
+}
+
+code,
+.sp-mono {
+  font-family: t.$sp-font-mono;
+}
+
+.sp-status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+
+  &--rupture {
+    color: t.$sp-status-rupture;
+    border-color: t.$sp-status-rupture;
+    background-color: color-mix(in srgb, t.$sp-status-rupture 12%, white);
+  }
+
+  &--critique {
+    color: t.$sp-status-critique;
+    border-color: t.$sp-status-critique;
+    background-color: color-mix(in srgb, t.$sp-status-critique 12%, white);
+  }
+
+  &--ok {
+    color: t.$sp-status-ok;
+    border-color: t.$sp-status-ok;
+    background-color: color-mix(in srgb, t.$sp-status-ok 12%, white);
+  }
+}
