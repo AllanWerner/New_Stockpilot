@@ -22,6 +22,12 @@
   max-width: 400px;
 }
 
+.sp-catalog__hint {
+  color: t.$sp-text-secondary;
+  font-size: 13px;
+  margin: -8px 0 12px;
+}
+
 .sp-catalog__table {
   width: 100%;
   background-color: t.$sp-card;

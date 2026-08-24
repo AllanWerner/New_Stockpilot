@@ -2,9 +2,6 @@
   <aside class="sp-sidebar">
     <div class="sp-sidebar__brand">
       <span class="sp-sidebar__title">StockPilot</span>
-      @if (currentUser(); as user) {
-        <span class="sp-sidebar__subtitle">{{ boutiqueLabel(user) }}</span>
-      }
     </div>
 
     <mat-nav-list class="sp-sidebar__nav">
@@ -21,7 +18,24 @@
 
   <div class="sp-main">
     <mat-toolbar class="sp-header">
+      @if (boutiques().length > 0) {
+        <button mat-button [matMenuTriggerFor]="boutiqueMenu" class="sp-header__boutique">
+          <mat-icon>storefront</mat-icon>
+          {{ selectedBoutique()?.nom ?? 'Toutes boutiques' }}
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #boutiqueMenu="matMenu">
+          @if (currentUser()?.role === 'GERANT') {
+            <button mat-menu-item (click)="selectionnerBoutique(null)">Toutes boutiques</button>
+          }
+          @for (boutique of boutiques(); track boutique.idBoutique) {
+            <button mat-menu-item (click)="selectionnerBoutique(boutique.idBoutique)">{{ boutique.nom }}</button>
+          }
+        </mat-menu>
+      }
+
       <span class="sp-header__spacer"></span>
+
       @if (currentUser(); as user) {
         <button mat-button [matMenuTriggerFor]="userMenu">
           <mat-icon>account_circle</mat-icon>

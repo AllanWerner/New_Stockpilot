@@ -5,7 +5,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
-import { MeResponse } from '../models/auth.model';
+import { BoutiqueContextService } from '../boutique/boutique-context.service';
 
 @Component({
   selector: 'sp-shell',
@@ -16,22 +16,22 @@ import { MeResponse } from '../models/auth.model';
 })
 export class ShellComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly boutiqueContext = inject(BoutiqueContextService);
 
   readonly currentUser = this.authService.currentUser;
+  readonly boutiques = this.boutiqueContext.boutiques;
+  readonly selectedBoutique = this.boutiqueContext.selectedBoutique;
 
   ngOnInit(): void {
     this.authService.chargerProfil().subscribe();
+    this.boutiqueContext.charger().subscribe();
   }
 
   logout(): void {
     this.authService.logout();
   }
 
-  boutiqueLabel(user: MeResponse): string {
-    if (user.boutiques.length > 0) {
-      return user.boutiques[0].nomBoutique;
-    }
-
-    return user.role === 'GERANT' ? 'Toutes boutiques' : '';
+  selectionnerBoutique(idBoutique: number | null): void {
+    this.boutiqueContext.selectionner(idBoutique);
   }
 }
