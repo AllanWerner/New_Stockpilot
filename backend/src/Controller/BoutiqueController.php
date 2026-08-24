@@ -8,10 +8,12 @@ use App\Dto\Request\AffecterEmployeRequestDto;
 use App\Dto\Request\CreateBoutiqueRequestDto;
 use App\Entity\Affectation;
 use App\Entity\Boutique;
+use App\Entity\Employe;
 use App\Entity\Enum\PosteEmploye;
 use App\Repository\AffectationRepositoryInterface;
 use App\Repository\BoutiqueRepositoryInterface;
 use App\Repository\EmployeRepositoryInterface;
+use App\Security\AccessVoter;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,17 +28,41 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * against the repository interfaces here, matching the approved design.
  */
 #[Route('/api/boutiques')]
-#[IsGranted('ROLE_GERANT')]
 final class BoutiqueController extends AbstractController
 {
     public function __construct(
         private readonly BoutiqueRepositoryInterface $boutiqueRepository,
         private readonly EmployeRepositoryInterface $employeRepository,
         private readonly AffectationRepositoryInterface $affectationRepository,
+        private readonly AccessVoter $accessVoter,
     ) {
     }
 
+    /**
+     * Boutiques the current employee can act on: every boutique for a gérant
+     * (full access), or just their Affectation rows for an employé — powers
+     * the persistent "Ma boutique" selector in the frontend header.
+     */
+    #[Route('', methods: ['GET'])]
+    public function list(): JsonResponse
+    {
+        /** @var Employe $employe */
+        $employe = $this->getUser();
+
+        $boutiques = $this->accessVoter->estGerant($employe)
+            ? $this->boutiqueRepository->findAll()
+            : $this->boutiqueRepository->findByEmploye($employe);
+
+        return $this->json(array_map(static fn (Boutique $b) => [
+            'idBoutique' => $b->getId(),
+            'nom' => $b->getNom(),
+            'adresse' => $b->getAdresse(),
+            'ville' => $b->getVille(),
+        ], $boutiques));
+    }
+
     #[Route('', methods: ['POST'])]
+    #[IsGranted('ROLE_GERANT')]
     public function create(#[MapRequestPayload] CreateBoutiqueRequestDto $dto): JsonResponse
     {
         $boutique = new Boutique($dto->nom, $dto->adresse, $dto->ville);
@@ -51,6 +77,7 @@ final class BoutiqueController extends AbstractController
     }
 
     #[Route('/{id}/affecter', methods: ['POST'])]
+    #[IsGranted('ROLE_GERANT')]
     public function affecterEmploye(
         #[MapEntity(id: 'id')] Boutique $boutique,
         #[MapRequestPayload] AffecterEmployeRequestDto $dto,

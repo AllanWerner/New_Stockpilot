@@ -1,12 +1,16 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Produit } from '../../../core/models/produit.model';
 import { CatalogService } from '../catalog.service';
+
+export interface CatalogFormDialogData {
+  idBoutique: number | null;
+}
 
 @Component({
   selector: 'sp-catalog-form',
@@ -26,9 +30,11 @@ export class CatalogFormComponent {
   private readonly fb = inject(FormBuilder);
   private readonly catalogService = inject(CatalogService);
   private readonly dialogRef = inject(MatDialogRef<CatalogFormComponent>);
+  private readonly data = inject<CatalogFormDialogData>(MAT_DIALOG_DATA, { optional: true });
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly idBoutique = this.data?.idBoutique ?? null;
 
   readonly form = this.fb.nonNullable.group({
     nom: ['', Validators.required],
@@ -36,6 +42,7 @@ export class CatalogFormComponent {
     unite: ['piece', Validators.required],
     idCategorie: [1, [Validators.required, Validators.min(1)]],
     codeBarre: [''],
+    seuilReappro: [0, [Validators.required, Validators.min(0)]],
   });
 
   submit(): void {
@@ -56,6 +63,8 @@ export class CatalogFormComponent {
         unite: raw.unite,
         idCategorie: raw.idCategorie,
         codeBarre: raw.codeBarre || undefined,
+        idBoutique: this.idBoutique ?? undefined,
+        seuilReappro: this.idBoutique ? raw.seuilReappro : undefined,
       })
       .subscribe({
         next: (produit: Produit) => {
