@@ -24,6 +24,11 @@ final class FournisseurRepository extends ServiceEntityRepository implements Fou
         return parent::find($id, $lockMode, $lockVersion);
     }
 
+    public function findAll(): array
+    {
+        return parent::findAll();
+    }
+
     public function save(Fournisseur $fournisseur): void
     {
         $em = $this->getEntityManager();

@@ -6,7 +6,9 @@ namespace App\EventListener;
 
 use App\Security\Exception\InvalidCredentialsException;
 use App\Security\Exception\TooManyLoginAttemptsException;
+use App\Service\Exception\LigneCommandeIntrouvableException;
 use App\Service\Exception\ProduitDejaExistantException;
+use App\Service\Exception\QuantiteRecueInvalideException;
 use App\Service\Exception\StockInsuffisantException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,8 +23,8 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
  * Converts every exception raised under /api into a uniform JSON error body,
  * so controllers/services can just throw meaningful exceptions instead of
  * building error responses by hand. Feature branches extend the match arms
- * below with their own domain exceptions (see F1/F2 commits) — this version
- * adds F2's catalog/stock exceptions on top of F1's auth exceptions.
+ * below with their own domain exceptions (see F1/F2/F3 commits) — this
+ * version adds F3's commande exceptions on top of F1/F2's.
  */
 final class ApiExceptionListener implements EventSubscriberInterface
 {
@@ -69,6 +71,8 @@ final class ApiExceptionListener implements EventSubscriberInterface
                 ],
             ]],
             $throwable instanceof StockInsuffisantException => [409, ['error' => $throwable->getMessage()]],
+            $throwable instanceof LigneCommandeIntrouvableException => [404, ['error' => $throwable->getMessage()]],
+            $throwable instanceof QuantiteRecueInvalideException => [422, ['error' => $throwable->getMessage()]],
             $throwable instanceof AuthenticationException => [401, ['error' => 'Authentification requise.']],
             $throwable instanceof AccessDeniedException => [403, ['error' => 'Accès refusé.']],
             $throwable instanceof HttpExceptionInterface => [

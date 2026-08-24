@@ -21,6 +21,25 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/catalog/catalog-list/catalog-list.component').then((m) => m.CatalogListComponent),
       },
+      {
+        path: 'commandes',
+        loadComponent: () =>
+          import('./features/commande/commande-list/commande-list.component').then((m) => m.CommandeListComponent),
+      },
+      {
+        path: 'commandes/nouvelle',
+        loadComponent: () =>
+          import('./features/commande/commande-create/commande-create.component').then(
+            (m) => m.CommandeCreateComponent,
+          ),
+      },
+      {
+        path: 'commandes/:id',
+        loadComponent: () =>
+          import('./features/commande/commande-detail/commande-detail.component').then(
+            (m) => m.CommandeDetailComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

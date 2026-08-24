@@ -1,0 +1,74 @@
+@if (commande(); as commande) {
+  <div class="sp-commande-detail">
+    <a routerLink="/commandes" class="sp-commande-detail__back">← Retour aux commandes</a>
+
+    <div class="sp-commande-detail__header">
+      <div>
+        <h1>Commande #{{ commande.idCommande }}</h1>
+        <p class="sp-commande-detail__meta">
+          {{ commande.fournisseur.nom }} · {{ commande.boutique.nom }} · créée le
+          {{ commande.dateCreation | date: 'dd/MM/yyyy' }}
+          @if (commande.datePrevue) {
+            · livraison prévue le {{ commande.datePrevue | date: 'dd/MM/yyyy' }}
+          }
+        </p>
+      </div>
+      <span class="sp-status-badge" [class]="statutClasse(commande.statut)">{{
+        statutLabel(commande.statut)
+      }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="enregistrerReception()">
+      <table class="sp-commande-detail__table" formArrayName="lignes">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Qté commandée</th>
+            <th>Qté reçue</th>
+            @if (peutReceptionner()) {
+              <th>Qté à réceptionner</th>
+            }
+            <th>Prix unitaire</th>
+            <th>Sous-total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ligne of commande.lignes; track ligne.idLigneCommande; let i = $index) {
+            <tr [formGroupName]="i">
+              <td>{{ ligne.produit.nom }}</td>
+              <td class="sp-mono">{{ ligne.quantiteCommandee }}</td>
+              <td class="sp-mono">{{ ligne.quantiteRecue }}</td>
+              @if (peutReceptionner()) {
+                <td>
+                  <input matInput type="number" formControlName="quantiteARecevoir" min="0" />
+                </td>
+              }
+              <td class="sp-mono">{{ ligne.prixUnitaire }} €</td>
+              <td class="sp-mono">{{ ligne.sousTotal }} €</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (errorMessage(); as message) {
+        <p class="sp-form__error">{{ message }}</p>
+      }
+
+      @if (peutReceptionner()) {
+        <div class="sp-commande-detail__actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="submitting()">
+            @if (submitting()) {
+              <mat-spinner diameter="18"></mat-spinner>
+            } @else {
+              Marquer reçue
+            }
+          </button>
+        </div>
+      }
+    </form>
+  </div>
+} @else if (loading()) {
+  <div class="sp-commande-detail__loading">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+}

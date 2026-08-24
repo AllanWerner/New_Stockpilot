@@ -1,0 +1,75 @@
+@use '../../../../styles/tokens' as t;
+
+h1 {
+  font-family: t.$sp-font-heading;
+  margin: 0 0 16px;
+}
+
+.sp-commande-create__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.sp-commande-create__field {
+  min-width: 220px;
+}
+
+.sp-commande-create__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.sp-commande-create__search {
+  min-width: 260px;
+}
+
+.sp-commande-create__table {
+  width: 100%;
+  background-color: t.$sp-card;
+  border-radius: 8px;
+  border-collapse: collapse;
+  overflow: hidden;
+
+  th,
+  td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid t.$sp-bg;
+  }
+
+  input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+  }
+}
+
+.sp-commande-create__empty {
+  color: t.$sp-text-secondary;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.sp-commande-create__total {
+  text-align: right;
+  margin: 12px 4px;
+}
+
+.sp-commande-create__submit {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.sp-form__error {
+  color: t.$sp-status-rupture;
+  font-size: 13px;
+}
