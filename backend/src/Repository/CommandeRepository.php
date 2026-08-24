@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Boutique;
 use App\Entity\Commande;
+use App\Entity\Enum\StatutCommande;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
@@ -28,6 +29,22 @@ final class CommandeRepository extends ServiceEntityRepository implements Comman
     public function findByBoutique(Boutique $boutique): array
     {
         return $this->findBy(['boutique' => $boutique], ['dateCreation' => 'DESC']);
+    }
+
+    public function countEnCoursPourBoutiques(array $boutiques): int
+    {
+        if ([] === $boutiques) {
+            return 0;
+        }
+
+        return (int) $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->andWhere('c.boutique IN (:boutiques)')
+            ->andWhere('c.statut IN (:statuts)')
+            ->setParameter('boutiques', $boutiques)
+            ->setParameter('statuts', [StatutCommande::ENVOYEE, StatutCommande::RECUE_PARTIELLE])
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     public function save(Commande $commande): void

@@ -16,5 +16,10 @@ interface CommandeRepositoryInterface
      */
     public function findByBoutique(Boutique $boutique): array;
 
+    /**
+     * @param Boutique[] $boutiques
+     */
+    public function countEnCoursPourBoutiques(array $boutiques): int;
+
     public function save(Commande $commande): void;
 }

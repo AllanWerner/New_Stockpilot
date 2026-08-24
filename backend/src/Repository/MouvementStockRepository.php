@@ -24,4 +24,21 @@ final class MouvementStockRepository extends ServiceEntityRepository implements 
         $em->persist($mouvement);
         $em->flush();
     }
+
+    public function findDepuisPourBoutiques(array $boutiques, \DateTimeImmutable $depuis): array
+    {
+        if ([] === $boutiques) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('m')
+            ->addSelect('p')
+            ->innerJoin('m.produit', 'p')
+            ->andWhere('m.boutique IN (:boutiques)')
+            ->andWhere('m.dateMouvement >= :depuis')
+            ->setParameter('boutiques', $boutiques)
+            ->setParameter('depuis', $depuis)
+            ->getQuery()
+            ->getResult();
+    }
 }
