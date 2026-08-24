@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Employe;
+use App\Entity\Enum\RoleEmploye;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
@@ -27,6 +28,11 @@ final class EmployeRepository extends ServiceEntityRepository implements Employe
     public function find(mixed $id, LockMode|int|null $lockMode = null, ?int $lockVersion = null): ?Employe
     {
         return parent::find($id, $lockMode, $lockVersion);
+    }
+
+    public function findGerants(): array
+    {
+        return $this->findBy(['role' => RoleEmploye::GERANT]);
     }
 
     public function save(Employe $employe): void

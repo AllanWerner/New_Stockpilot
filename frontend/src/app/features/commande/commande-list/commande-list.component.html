@@ -1,0 +1,55 @@
+<div class="sp-commandes">
+  <div class="sp-commandes__header">
+    <h1>Commandes fournisseurs</h1>
+    <button mat-flat-button color="primary" [disabled]="!canCreer()" routerLink="/commandes/nouvelle">
+      <mat-icon>add</mat-icon>
+      Nouvelle commande
+    </button>
+  </div>
+
+  @if (!selectedBoutique()) {
+    <p class="sp-commandes__hint">Sélectionnez une boutique dans l'en-tête pour voir ses commandes.</p>
+  } @else if (loading()) {
+    <div class="sp-commandes__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else {
+    <table mat-table [dataSource]="commandes()" class="sp-commandes__table">
+      <ng-container matColumnDef="idCommande">
+        <th mat-header-cell *matHeaderCellDef>N°</th>
+        <td mat-cell *matCellDef="let c" class="sp-mono">#{{ c.idCommande }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="fournisseur">
+        <th mat-header-cell *matHeaderCellDef>Fournisseur</th>
+        <td mat-cell *matCellDef="let c">{{ c.fournisseur.nom }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="dateCreation">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let c" class="sp-mono">{{ c.dateCreation | date: 'dd/MM/yyyy' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="statut">
+        <th mat-header-cell *matHeaderCellDef>Statut</th>
+        <td mat-cell *matCellDef="let c">
+          <span class="sp-status-badge" [class]="statutClasse(c.statut)">{{ statutLabel(c.statut) }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let c">
+          <button mat-button (click)="ouvrir(c.idCommande)">Voir</button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="ouvrir(row.idCommande)"></tr>
+    </table>
+
+    @if (commandes().length === 0) {
+      <p class="sp-commandes__empty">Aucune commande pour cette boutique.</p>
+    }
+  }
+</div>

@@ -1,0 +1,109 @@
+<div class="sp-commande-create">
+  <h1>Générer une commande</h1>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="sp-commande-create__header">
+      <mat-form-field appearance="outline" class="sp-commande-create__field">
+        <mat-label>Fournisseur</mat-label>
+        <mat-select formControlName="idFournisseur">
+          @for (fournisseur of fournisseurs(); track fournisseur.idFournisseur) {
+            <mat-option [value]="fournisseur.idFournisseur">{{ fournisseur.nom }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button type="button" (click)="ouvrirNouveauFournisseur()">
+        <mat-icon>add</mat-icon>
+        Nouveau fournisseur
+      </button>
+
+      <mat-form-field appearance="outline" class="sp-commande-create__field">
+        <mat-label>Date de livraison prévue</mat-label>
+        <input matInput type="date" formControlName="datePrevue" />
+      </mat-form-field>
+    </div>
+
+    <div class="sp-commande-create__actions">
+      <button mat-stroked-button type="button" (click)="prefillDepuisSeuils()" [disabled]="loadingSeuils()">
+        @if (loadingSeuils()) {
+          <mat-spinner diameter="18"></mat-spinner>
+        } @else {
+          <mat-icon>auto_awesome</mat-icon>
+        }
+        Charger les produits sous seuil
+      </button>
+
+      <mat-form-field appearance="outline" class="sp-commande-create__search">
+        <mat-label>Ajouter un produit</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="rechercherProduit()"
+          [matAutocomplete]="auto"
+        />
+        <mat-autocomplete #auto="matAutocomplete">
+          @for (produit of resultatsRecherche(); track produit.idProduit) {
+            <mat-option [value]="produit.nom" (onSelectionChange)="ajouterProduit(produit)">
+              {{ produit.nom }}
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+
+    <table class="sp-commande-create__table" formArrayName="lignes">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Quantité</th>
+          <th>Prix unitaire</th>
+          <th>Sous-total</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (ligne of lignes.controls; track ligne; let i = $index) {
+          <tr [formGroupName]="i">
+            <td>{{ ligne.value.nom }}</td>
+            <td>
+              <input matInput type="number" formControlName="quantiteCommandee" min="1" />
+            </td>
+            <td>
+              <input matInput formControlName="prixUnitaire" />
+            </td>
+            <td class="sp-mono">{{ sousTotal(i) }} €</td>
+            <td>
+              <button mat-icon-button type="button" (click)="supprimerLigne(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (lignes.length === 0) {
+      <p class="sp-commande-create__empty">
+        Aucune ligne — chargez les produits sous seuil ou ajoutez-en manuellement.
+      </p>
+    } @else {
+      <p class="sp-commande-create__total">Total : <strong>{{ totalGeneral() }} €</strong></p>
+    }
+
+    @if (errorMessage(); as message) {
+      <p class="sp-form__error">{{ message }}</p>
+    }
+
+    <div class="sp-commande-create__submit">
+      <button mat-button type="button" routerLink="/commandes">Annuler</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="submitting() || lignes.length === 0">
+        @if (submitting()) {
+          <mat-spinner diameter="18"></mat-spinner>
+        } @else {
+          Envoyer la commande
+        }
+      </button>
+    </div>
+  </form>
+</div>

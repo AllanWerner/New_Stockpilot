@@ -10,5 +10,10 @@ interface FournisseurRepositoryInterface
 {
     public function find(int $id): ?Fournisseur;
 
+    /**
+     * @return Fournisseur[]
+     */
+    public function findAll(): array;
+
     public function save(Fournisseur $fournisseur): void;
 }
