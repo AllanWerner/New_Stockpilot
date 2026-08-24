@@ -12,5 +12,10 @@ interface EmployeRepositoryInterface
 
     public function find(int $id): ?Employe;
 
+    /**
+     * @return Employe[]
+     */
+    public function findGerants(): array;
+
     public function save(Employe $employe): void;
 }
