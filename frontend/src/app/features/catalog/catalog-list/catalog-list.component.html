@@ -1,0 +1,68 @@
+<div class="sp-catalog">
+  <div class="sp-catalog__header">
+    <h1>Catalogue produits</h1>
+    <div class="sp-catalog__actions">
+      <button mat-stroked-button (click)="openScanDialog()">
+        <mat-icon>qr_code_scanner</mat-icon>
+        Scanner
+      </button>
+      <button mat-flat-button color="primary" (click)="openCreateDialog()">
+        <mat-icon>add</mat-icon>
+        Ajouter
+      </button>
+    </div>
+  </div>
+
+  <mat-form-field appearance="outline" class="sp-catalog__search">
+    <mat-label>Rechercher un produit</mat-label>
+    <input matInput [(ngModel)]="searchTerm" (keyup.enter)="reload()" />
+    <button matSuffix mat-icon-button (click)="reload()">
+      <mat-icon>search</mat-icon>
+    </button>
+  </mat-form-field>
+
+  @if (loading()) {
+    <div class="sp-catalog__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else {
+    <table mat-table [dataSource]="produits()" class="sp-catalog__table">
+      <ng-container matColumnDef="nom">
+        <th mat-header-cell *matHeaderCellDef>Produit</th>
+        <td mat-cell *matCellDef="let p">
+          {{ p.nom }}
+          @if (p.sourceCompletion === 'MANUELLE') {
+            <span class="sp-status-badge sp-status-badge--critique">à compléter</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="categorie">
+        <th mat-header-cell *matHeaderCellDef>Catégorie</th>
+        <td mat-cell *matCellDef="let p">{{ p.categorie.nom }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="codeBarre">
+        <th mat-header-cell *matHeaderCellDef>Code-barres</th>
+        <td mat-cell *matCellDef="let p" class="sp-mono">{{ p.codeBarre ?? '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="prixAchat">
+        <th mat-header-cell *matHeaderCellDef>Prix d'achat</th>
+        <td mat-cell *matCellDef="let p" class="sp-mono">{{ p.prixAchat }} €</td>
+      </ng-container>
+
+      <ng-container matColumnDef="unite">
+        <th mat-header-cell *matHeaderCellDef>Unité</th>
+        <td mat-cell *matCellDef="let p">{{ p.unite }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    @if (produits().length === 0) {
+      <p class="sp-catalog__empty">Aucun produit trouvé.</p>
+    }
+  }
+</div>

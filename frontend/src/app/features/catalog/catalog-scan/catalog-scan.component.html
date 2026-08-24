@@ -1,0 +1,33 @@
+<h2 mat-dialog-title>
+  <mat-icon>qr_code_scanner</mat-icon>
+  Scanner un produit
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content>
+    <p class="sp-scan__hint">
+      Saisissez ou scannez le code-barres du produit. Si une référence externe est trouvée, la fiche
+      sera pré-remplie automatiquement ; sinon vous pourrez la compléter manuellement.
+    </p>
+
+    <mat-form-field appearance="outline" class="sp-scan__field">
+      <mat-label>Code-barres</mat-label>
+      <input matInput formControlName="codeBarre" autocomplete="off" />
+    </mat-form-field>
+
+    @if (errorMessage(); as message) {
+      <p class="sp-scan__error">{{ message }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="loading()">Annuler</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="loading()">
+      @if (loading()) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        Valider
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

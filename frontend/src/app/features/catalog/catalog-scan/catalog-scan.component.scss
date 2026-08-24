@@ -1,0 +1,21 @@
+@use '../../../../styles/tokens' as t;
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-scan__hint {
+  color: t.$sp-text-secondary;
+  font-size: 13px;
+}
+
+.sp-scan__field {
+  width: 100%;
+}
+
+.sp-scan__error {
+  color: t.$sp-status-rupture;
+  font-size: 13px;
+}
