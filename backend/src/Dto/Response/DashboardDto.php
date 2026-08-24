@@ -7,8 +7,8 @@ namespace App\Dto\Response;
 final class DashboardDto
 {
     /**
-     * @param PointValorisationDto[]         $evolutionValorisation
-     * @param ProduitSousSeuilCritiqueDto[]  $produitsSousSeuilCritique
+     * @param PointValorisationDto[]        $evolutionValorisation
+     * @param ProduitSousSeuilCritiqueDto[] $produitsSousSeuilCritique
      */
     public function __construct(
         public readonly string $valeurStock,
