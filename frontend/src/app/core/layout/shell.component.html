@@ -1,0 +1,43 @@
+<div class="sp-shell">
+  <aside class="sp-sidebar">
+    <div class="sp-sidebar__brand">
+      <span class="sp-sidebar__title">StockPilot</span>
+      @if (currentUser(); as user) {
+        <span class="sp-sidebar__subtitle">{{ boutiqueLabel(user) }}</span>
+      }
+    </div>
+
+    <mat-nav-list class="sp-sidebar__nav">
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="sp-nav-active">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Tableau de bord</span>
+      </a>
+      <a mat-list-item routerLink="/catalogue" routerLinkActive="sp-nav-active">
+        <mat-icon matListItemIcon>inventory_2</mat-icon>
+        <span matListItemTitle>Catalogue</span>
+      </a>
+    </mat-nav-list>
+  </aside>
+
+  <div class="sp-main">
+    <mat-toolbar class="sp-header">
+      <span class="sp-header__spacer"></span>
+      @if (currentUser(); as user) {
+        <button mat-button [matMenuTriggerFor]="userMenu">
+          <mat-icon>account_circle</mat-icon>
+          {{ user.prenom }} {{ user.nom }}
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </mat-menu>
+      }
+    </mat-toolbar>
+
+    <main class="sp-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

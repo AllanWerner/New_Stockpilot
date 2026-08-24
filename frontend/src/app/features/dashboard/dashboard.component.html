@@ -1,0 +1,18 @@
+<div class="sp-dashboard">
+  @if (currentUser(); as user) {
+    <h1>Bonjour {{ user.prenom }}</h1>
+    <p class="sp-dashboard__role">
+      Connecté en tant que {{ user.role === 'GERANT' ? 'Gérant' : 'Employé' }}
+      @if (user.boutiques.length > 0) {
+        — {{ user.boutiques.length }} boutique(s) rattachée(s)
+      }
+    </p>
+  }
+
+  <mat-card class="sp-dashboard__placeholder">
+    <p>
+      Le tableau de bord complet (valorisation du stock, ruptures, évolution) fera partie du module F4,
+      pas encore implémenté dans cette version.
+    </p>
+  </mat-card>
+</div>
