@@ -11,10 +11,13 @@ use App\Entity\Enum\TypeMouvement;
 use App\Entity\MouvementStock;
 use App\Entity\Produit;
 use App\Entity\Stock;
+use App\Repository\EmployeRepositoryInterface;
 use App\Repository\MouvementStockRepositoryInterface;
+use App\Repository\NotificationRepositoryInterface;
 use App\Repository\StockRepositoryInterface;
 use App\Service\Exception\StockInsuffisantException;
 use App\Service\MouvementStockService;
+use App\Service\NotificationService;
 use App\Service\StockService;
 use PHPUnit\Framework\TestCase;
 
@@ -38,12 +41,22 @@ final class StockServiceTest extends TestCase
     }
 
     /**
-     * MouvementStockService is a thin, final wrapper — real instance backed by
-     * a mocked repository, so the unit boundary stays at the repository interface.
+     * MouvementStockService and NotificationService are thin, final wrappers —
+     * real instances backed by mocked repositories, so the unit boundary stays
+     * at the repository interfaces.
      */
-    private function stockService(StockRepositoryInterface $stockRepository, MouvementStockRepositoryInterface $mouvementStockRepository): StockService
-    {
-        return new StockService($stockRepository, new MouvementStockService($mouvementStockRepository));
+    private function stockService(
+        StockRepositoryInterface $stockRepository,
+        MouvementStockRepositoryInterface $mouvementStockRepository,
+        ?NotificationRepositoryInterface $notificationRepository = null,
+        ?EmployeRepositoryInterface $employeRepository = null,
+    ): StockService {
+        $notificationService = new NotificationService(
+            $notificationRepository ?? $this->createStub(NotificationRepositoryInterface::class),
+            $employeRepository ?? $this->createStub(EmployeRepositoryInterface::class),
+        );
+
+        return new StockService($stockRepository, new MouvementStockService($mouvementStockRepository), $notificationService);
     }
 
     public function testIncrementerStockCreeLeStockSiAbsentEtEnregistreLeMouvement(): void
@@ -114,6 +127,63 @@ final class StockServiceTest extends TestCase
         $stockService->decrementerStock($produit, $boutique, 4, TypeMouvement::VENTE, $employe);
 
         $this->assertSame(6, $stock->getQuantiteActuelle());
+    }
+
+    public function testDecrementerStockAlerteLorsDuFranchissementDuSeuil(): void
+    {
+        $produit = $this->produit();
+        $boutique = $this->boutique();
+        $employe = $this->employe();
+
+        $stock = new Stock($produit, $boutique, seuilReappro: 5);
+        $stock->setQuantiteActuelle(6);
+
+        $stockRepository = $this->createMock(StockRepositoryInterface::class);
+        $stockRepository->method('findOneByProduitAndBoutique')->willReturn($stock);
+
+        $gerant = $this->employe();
+        $employeRepository = $this->createStub(EmployeRepositoryInterface::class);
+        $employeRepository->method('findGerants')->willReturn([$gerant]);
+
+        $notificationRepository = $this->createMock(NotificationRepositoryInterface::class);
+        $notificationRepository->expects($this->once())->method('save');
+
+        $stockService = $this->stockService(
+            $stockRepository,
+            $this->createMock(MouvementStockRepositoryInterface::class),
+            $notificationRepository,
+            $employeRepository,
+        );
+
+        $stockService->decrementerStock($produit, $boutique, 2, TypeMouvement::VENTE, $employe);
+
+        $this->assertSame(4, $stock->getQuantiteActuelle());
+    }
+
+    public function testDecrementerStockNAlertePasSiDejaSousLeSeuil(): void
+    {
+        $produit = $this->produit();
+        $boutique = $this->boutique();
+        $employe = $this->employe();
+
+        $stock = new Stock($produit, $boutique, seuilReappro: 5);
+        $stock->setQuantiteActuelle(3);
+
+        $stockRepository = $this->createMock(StockRepositoryInterface::class);
+        $stockRepository->method('findOneByProduitAndBoutique')->willReturn($stock);
+
+        $notificationRepository = $this->createMock(NotificationRepositoryInterface::class);
+        $notificationRepository->expects($this->never())->method('save');
+
+        $stockService = $this->stockService(
+            $stockRepository,
+            $this->createMock(MouvementStockRepositoryInterface::class),
+            $notificationRepository,
+        );
+
+        $stockService->decrementerStock($produit, $boutique, 1, TypeMouvement::VENTE, $employe);
+
+        $this->assertSame(2, $stock->getQuantiteActuelle());
     }
 
     public function testListerSousSeuilDelegueAuRepository(): void
