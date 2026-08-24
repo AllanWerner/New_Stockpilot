@@ -1,0 +1,36 @@
+<div class="sp-notifications">
+  <div class="sp-notifications__header">
+    <h1>Notifications</h1>
+    <button mat-stroked-button (click)="toutMarquerLu()">Tout marquer comme lu</button>
+  </div>
+
+  @if (loading()) {
+    <div class="sp-notifications__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else if (notifications().length === 0) {
+    <p class="sp-notifications__empty">Aucune notification pour le moment.</p>
+  } @else {
+    <ul class="sp-notifications__list">
+      @for (notification of notifications(); track notification.idNotification) {
+        <li
+          class="sp-notification"
+          [class.sp-notification--non-lue]="!notification.lu"
+          role="button"
+          tabindex="0"
+          (click)="marquerLue(notification)"
+          (keyup.enter)="marquerLue(notification)"
+        >
+          <mat-icon class="sp-notification__icon">{{ iconePour(notification.type) }}</mat-icon>
+          <div class="sp-notification__body">
+            <p class="sp-notification__message">{{ notification.message }}</p>
+            <p class="sp-notification__date">{{ notification.dateCreation | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          @if (!notification.lu) {
+            <span class="sp-notification__dot"></span>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

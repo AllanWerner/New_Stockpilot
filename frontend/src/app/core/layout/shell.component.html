@@ -17,6 +17,12 @@
         <mat-icon matListItemIcon>local_shipping</mat-icon>
         <span matListItemTitle>Commandes</span>
       </a>
+      <a mat-list-item routerLink="/notifications" routerLinkActive="sp-nav-active">
+        <mat-icon matListItemIcon [matBadge]="compteNotificationsNonLues() || undefined" matBadgeColor="warn" matBadgeSize="small">
+          notifications
+        </mat-icon>
+        <span matListItemTitle>Notifications</span>
+      </a>
     </mat-nav-list>
   </aside>
 
