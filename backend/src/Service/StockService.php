@@ -18,6 +18,7 @@ final class StockService
     public function __construct(
         private readonly StockRepositoryInterface $stockRepository,
         private readonly MouvementStockService $mouvementStockService,
+        private readonly NotificationService $notificationService,
     ) {
     }
 
@@ -59,10 +60,16 @@ final class StockService
             throw new StockInsuffisantException($quantite, $quantiteDisponible);
         }
 
+        $etaitAuDessusDuSeuil = $quantiteDisponible > $stock->getSeuilReappro();
+
         $stock->setQuantiteActuelle($quantiteDisponible - $quantite);
         $this->stockRepository->save($stock);
 
         $this->mouvementStockService->enregistrerMouvement($type, $produit, $boutique, -$quantite, $employe, $commande);
+
+        if ($etaitAuDessusDuSeuil && $stock->getQuantiteActuelle() <= $stock->getSeuilReappro()) {
+            $this->notificationService->alerterSeuilCritique($stock);
+        }
     }
 
     /**

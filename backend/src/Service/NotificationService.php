@@ -8,13 +8,10 @@ use App\Entity\Commande;
 use App\Entity\Employe;
 use App\Entity\Enum\StatutCommande;
 use App\Entity\Notification;
+use App\Entity\Stock;
 use App\Repository\EmployeRepositoryInterface;
 use App\Repository\NotificationRepositoryInterface;
 
-/**
- * F3 scope only (notifierReception): alerterSeuilCritique from the Jalon 4
- * class diagram is F5's, added when notifications/alerting land.
- */
 final class NotificationService
 {
     public function __construct(
@@ -44,6 +41,27 @@ final class NotificationService
 
             $dejaNotifies[$employe->getId()] = true;
             $this->notificationRepository->save(new Notification('RECEPTION_COMMANDE', $message, $employe));
+        }
+    }
+
+    /**
+     * Notifies every gérant when a stock movement makes a product cross under
+     * its reorder threshold (see StockService::decrementerStock, which only
+     * calls this on the crossing, not on every subsequent sale while already
+     * low — otherwise a slow-moving low-stock product would spam alerts).
+     */
+    public function alerterSeuilCritique(Stock $stock): void
+    {
+        $message = sprintf(
+            'Le produit "%s" (%s) a atteint son seuil de réapprovisionnement : %d unité(s) restante(s) (seuil : %d).',
+            $stock->getProduit()->getNom(),
+            $stock->getBoutique()->getNom(),
+            $stock->getQuantiteActuelle(),
+            $stock->getSeuilReappro(),
+        );
+
+        foreach ($this->employeRepository->findGerants() as $gerant) {
+            $this->notificationRepository->save(new Notification('SEUIL_CRITIQUE', $message, $gerant));
         }
     }
 

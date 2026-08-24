@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Dto\Request\AjustementStockRequestDto;
 use App\Dto\Request\CreateProduitRequestDto;
 use App\Dto\Request\ProduitListRequestDto;
 use App\Dto\Request\ScanProduitRequestDto;
 use App\Entity\Boutique;
+use App\Entity\Employe;
+use App\Entity\Enum\TypeMouvement;
 use App\Entity\Produit;
 use App\Repository\BoutiqueRepositoryInterface;
+use App\Repository\ProduitRepositoryInterface;
 use App\Repository\StockRepositoryInterface;
 use App\Security\BoutiqueVoter;
 use App\Service\ProduitService;
@@ -29,6 +33,7 @@ final class ProduitController extends AbstractController
         private readonly StockService $stockService,
         private readonly BoutiqueRepositoryInterface $boutiqueRepository,
         private readonly StockRepositoryInterface $stockRepository,
+        private readonly ProduitRepositoryInterface $produitRepository,
     ) {
     }
 
@@ -84,6 +89,36 @@ final class ProduitController extends AbstractController
         }
 
         return $this->json($this->produitVersReponse($produit, $dto->idBoutique), 201);
+    }
+
+    /**
+     * Ajustement d'inventaire (CDCF F2) — the "vente" movement type stays
+     * write-only from the domain's point of view: recording a checkout sale
+     * is explicitly out of scope (see CDCF "Hors périmètre — Module de
+     * caisse"), so this endpoint only ever records TypeMouvement::AJUSTEMENT.
+     */
+    #[Route('/{id}/ajustement', methods: ['POST'])]
+    public function ajuster(int $id, #[MapRequestPayload] AjustementStockRequestDto $dto): JsonResponse
+    {
+        $produit = $this->produitRepository->find($id);
+
+        if (null === $produit) {
+            throw new NotFoundHttpException('Produit introuvable.');
+        }
+
+        $boutique = $this->trouverBoutique($dto->idBoutique);
+        $this->denyAccessUnlessGranted(BoutiqueVoter::ACCESS, $boutique);
+
+        /** @var Employe $employe */
+        $employe = $this->getUser();
+
+        if ($dto->quantite > 0) {
+            $this->stockService->incrementerStock($produit, $boutique, $dto->quantite, TypeMouvement::AJUSTEMENT, $employe);
+        } else {
+            $this->stockService->decrementerStock($produit, $boutique, abs($dto->quantite), TypeMouvement::AJUSTEMENT, $employe);
+        }
+
+        return $this->json($this->produitVersReponse($produit, $dto->idBoutique));
     }
 
     private function trouverBoutique(int $id): Boutique
