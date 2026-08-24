@@ -31,6 +31,21 @@ final class StockRepository extends ServiceEntityRepository implements StockRepo
             ->getResult();
     }
 
+    public function findParBoutiques(array $boutiques): array
+    {
+        if ([] === $boutiques) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('s')
+            ->addSelect('p')
+            ->innerJoin('s.produit', 'p')
+            ->andWhere('s.boutique IN (:boutiques)')
+            ->setParameter('boutiques', $boutiques)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneByProduitAndBoutique(Produit $produit, Boutique $boutique): ?Stock
     {
         return $this->findOneBy(['produit' => $produit, 'boutique' => $boutique]);

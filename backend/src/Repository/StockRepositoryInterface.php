@@ -15,6 +15,13 @@ interface StockRepositoryInterface
      */
     public function findSousSeuil(Boutique $boutique): array;
 
+    /**
+     * @param Boutique[] $boutiques
+     *
+     * @return Stock[]
+     */
+    public function findParBoutiques(array $boutiques): array;
+
     public function findOneByProduitAndBoutique(Produit $produit, Boutique $boutique): ?Stock;
 
     public function save(Stock $stock): void;

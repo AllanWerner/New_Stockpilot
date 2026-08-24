@@ -1,18 +1,81 @@
 <div class="sp-dashboard">
-  @if (currentUser(); as user) {
-    <h1>Bonjour {{ user.prenom }}</h1>
-    <p class="sp-dashboard__role">
-      Connecté en tant que {{ user.role === 'GERANT' ? 'Gérant' : 'Employé' }}
-      @if (user.boutiques.length > 0) {
-        — {{ user.boutiques.length }} boutique(s) rattachée(s)
-      }
-    </p>
-  }
+  <h1>Tableau de bord</h1>
+  <p class="sp-dashboard__subtitle">
+    @if (selectedBoutique(); as boutique) {
+      Boutique — {{ boutique.nom }}
+    } @else {
+      Vue consolidée — {{ boutiques().length }} boutique(s)
+    }
+  </p>
 
-  <mat-card class="sp-dashboard__placeholder">
-    <p>
-      Le tableau de bord complet (valorisation du stock, ruptures, évolution) fera partie du module F4,
-      pas encore implémenté dans cette version.
-    </p>
-  </mat-card>
+  @if (dashboard(); as data) {
+    <div class="sp-dashboard__kpis">
+      <mat-card class="sp-kpi">
+        <p class="sp-kpi__label">Valeur du stock</p>
+        <p class="sp-kpi__value">{{ data.valeurStock }} €</p>
+      </mat-card>
+      <mat-card class="sp-kpi">
+        <p class="sp-kpi__label">Références en rupture</p>
+        <p class="sp-kpi__value sp-kpi__value--rupture">{{ data.referencesEnRupture }}</p>
+      </mat-card>
+      <mat-card class="sp-kpi">
+        <p class="sp-kpi__label">Sous seuil critique</p>
+        <p class="sp-kpi__value sp-kpi__value--critique">{{ data.sousSeuilCritique }}</p>
+      </mat-card>
+      <mat-card class="sp-kpi">
+        <p class="sp-kpi__label">Commandes en cours</p>
+        <p class="sp-kpi__value sp-kpi__value--ok">{{ data.commandesEnCours }}</p>
+      </mat-card>
+    </div>
+
+    <mat-card class="sp-dashboard__chart-card">
+      <p class="sp-dashboard__card-title">Évolution de la valorisation du stock</p>
+      @if (data.evolutionValorisation.length > 1) {
+        <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" class="sp-chart" preserveAspectRatio="none">
+          <polyline [attr.points]="chartPolyline()" class="sp-chart__line" />
+          @for (point of chartDots(); track $index) {
+            <circle [attr.cx]="point.x" [attr.cy]="point.y" r="3" class="sp-chart__dot" />
+          }
+        </svg>
+      } @else {
+        <p class="sp-dashboard__empty">Pas assez de données pour tracer une évolution.</p>
+      }
+    </mat-card>
+
+    <mat-card class="sp-dashboard__table-card">
+      <p class="sp-dashboard__card-title">Produits sous seuil critique</p>
+      @if (data.produitsSousSeuilCritique.length === 0) {
+        <p class="sp-dashboard__empty">Aucun produit sous seuil.</p>
+      } @else {
+        <table class="sp-dashboard__table">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Boutique</th>
+              <th>Stock actuel</th>
+              <th>Seuil</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (produit of data.produitsSousSeuilCritique; track produit.idProduit + '-' + produit.idBoutique) {
+              <tr>
+                <td>{{ produit.nom }}</td>
+                <td>{{ produit.nomBoutique }}</td>
+                <td class="sp-mono">{{ produit.quantiteActuelle }}</td>
+                <td class="sp-mono">{{ produit.seuilReappro }}</td>
+                <td>
+                  <span class="sp-status-badge" [class]="statutClasse(produit.statut)">{{ produit.statut }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </mat-card>
+  } @else if (loading()) {
+    <div class="sp-dashboard__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  }
 </div>
