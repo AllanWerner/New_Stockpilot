@@ -1,0 +1,19 @@
+@use '../../../styles/tokens' as t;
+
+.sp-dashboard {
+  h1 {
+    font-family: t.$sp-font-heading;
+    margin-bottom: 4px;
+  }
+}
+
+.sp-dashboard__role {
+  color: t.$sp-text-secondary;
+  margin-top: 0;
+}
+
+.sp-dashboard__placeholder {
+  margin-top: 24px;
+  padding: 16px;
+  color: t.$sp-text-secondary;
+}
