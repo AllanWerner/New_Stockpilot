@@ -7,8 +7,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BoutiqueContextService } from '../../../core/boutique/boutique-context.service';
 import { Produit } from '../../../core/models/produit.model';
+import { CatalogAdjustComponent } from '../catalog-adjust/catalog-adjust.component';
 import { CatalogFormComponent } from '../catalog-form/catalog-form.component';
 import { CatalogScanComponent } from '../catalog-scan/catalog-scan.component';
 import { CatalogService } from '../catalog.service';
@@ -25,6 +27,7 @@ import { CatalogService } from '../catalog.service';
     MatInputModule,
     MatDialogModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
   ],
   templateUrl: './catalog-list.component.html',
   styleUrl: './catalog-list.component.scss',
@@ -34,7 +37,7 @@ export class CatalogListComponent {
   private readonly dialog = inject(MatDialog);
   private readonly boutiqueContext = inject(BoutiqueContextService);
 
-  readonly displayedColumns = ['nom', 'categorie', 'codeBarre', 'prixAchat', 'stock', 'statut'];
+  readonly displayedColumns = ['nom', 'categorie', 'codeBarre', 'prixAchat', 'stock', 'statut', 'actions'];
   readonly produits = signal<Produit[]>([]);
   readonly loading = signal(false);
   readonly searchTerm = signal('');
@@ -110,6 +113,30 @@ export class CatalogListComponent {
 
     ref.afterClosed().subscribe((produit: Produit | undefined) => {
       if (produit) {
+        this.reload();
+      }
+    });
+  }
+
+  openAdjustDialog(produit: Produit): void {
+    const idBoutique = this.boutiqueContext.selectedId();
+
+    if (idBoutique === null) {
+      return;
+    }
+
+    const ref = this.dialog.open(CatalogAdjustComponent, {
+      width: '420px',
+      data: {
+        idProduit: produit.idProduit,
+        idBoutique,
+        nom: produit.nom,
+        quantiteActuelle: produit.stock?.quantiteActuelle ?? 0,
+      },
+    });
+
+    ref.afterClosed().subscribe((updated: Produit | undefined) => {
+      if (updated) {
         this.reload();
       }
     });

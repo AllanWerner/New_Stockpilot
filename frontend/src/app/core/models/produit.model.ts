@@ -56,3 +56,8 @@ export interface ScanProduitPayload {
   seuilReappro?: number;
   quantiteCommandeReco?: number;
 }
+
+export interface AjustementStockPayload {
+  idBoutique: number;
+  quantite: number;
+}

@@ -40,6 +40,13 @@ export const routes: Routes = [
             (m) => m.CommandeDetailComponent,
           ),
       },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/notification-list/notification-list.component').then(
+            (m) => m.NotificationListComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

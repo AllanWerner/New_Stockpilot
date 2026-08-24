@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  AjustementStockPayload,
   CreateProduitPayload,
   Produit,
   ProduitFilters,
@@ -32,5 +33,9 @@ export class CatalogService {
 
   scan(payload: ScanProduitPayload): Observable<Produit> {
     return this.http.post<Produit>(`${environment.apiUrl}/produits/scan`, payload);
+  }
+
+  ajuster(idProduit: number, payload: AjustementStockPayload): Observable<Produit> {
+    return this.http.post<Produit>(`${environment.apiUrl}/produits/${idProduit}/ajustement`, payload);
   }
 }
