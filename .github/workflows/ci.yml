@@ -34,7 +34,7 @@ jobs:
           path: backend/vendor
           key: composer-${{ hashFiles('backend/composer.lock') }}
 
-      - run: composer install --no-interaction --prefer-dist
+      - run: composer install --no-interaction --prefer-dist --no-scripts
 
       - name: Warm the dev container cache (needed by phpstan-symfony)
         env:
@@ -83,7 +83,7 @@ jobs:
           path: backend/vendor
           key: composer-${{ hashFiles('backend/composer.lock') }}
 
-      - run: composer install --no-interaction --prefer-dist
+      - run: composer install --no-interaction --prefer-dist --no-scripts
 
       - name: Generate an ephemeral JWT keypair
         run: php bin/console lexik:jwt:generate-keypair --no-interaction
