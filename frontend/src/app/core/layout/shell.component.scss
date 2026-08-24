@@ -32,11 +32,6 @@
   font-size: 20px;
 }
 
-.sp-sidebar__subtitle {
-  font-size: 12px;
-  opacity: 0.75;
-}
-
 .sp-sidebar__nav {
   background-color: transparent;
 
@@ -65,6 +60,11 @@
 
 .sp-header__spacer {
   flex: 1;
+}
+
+.sp-header__boutique {
+  color: t.$sp-primary;
+  font-weight: 600;
 }
 
 .sp-content {

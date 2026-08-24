@@ -29,6 +29,14 @@
       <input matInput formControlName="codeBarre" />
     </mat-form-field>
 
+    @if (idBoutique) {
+      <mat-form-field appearance="outline" class="sp-form__field">
+        <mat-label>Seuil de réapprovisionnement</mat-label>
+        <input matInput type="number" formControlName="seuilReappro" />
+        <mat-hint>Pour la boutique active — déclenche l'alerte de rupture.</mat-hint>
+      </mat-form-field>
+    }
+
     @if (errorMessage(); as message) {
       <p class="sp-form__error">{{ message }}</p>
     }
