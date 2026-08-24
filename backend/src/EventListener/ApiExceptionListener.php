@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace App\EventListener;
 
-use App\Security\Exception\InvalidCredentialsException;
-use App\Security\Exception\TooManyLoginAttemptsException;
-use App\Service\Exception\ProduitDejaExistantException;
-use App\Service\Exception\StockInsuffisantException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -20,7 +16,9 @@ use Symfony\Component\Validator\Exception\ValidationFailedException;
 /**
  * Converts every exception raised under /api into a uniform JSON error body,
  * so controllers/services can just throw meaningful exceptions instead of
- * building error responses by hand.
+ * building error responses by hand. Feature branches extend the match arms
+ * below with their own domain exceptions (see F1/F2 commits) — this base
+ * version only knows about framework-level exceptions.
  */
 final class ApiExceptionListener implements EventSubscriberInterface
 {
@@ -52,21 +50,6 @@ final class ApiExceptionListener implements EventSubscriberInterface
                     iterator_to_array($throwable->getViolations()),
                 ),
             ]],
-            $throwable instanceof InvalidCredentialsException => [401, ['error' => $throwable->getMessage()]],
-            $throwable instanceof ProduitDejaExistantException => [409, [
-                'error' => $throwable->getMessage(),
-                'produit' => [
-                    'idProduit' => $throwable->produit->getId(),
-                    'nom' => $throwable->produit->getNom(),
-                    'codeBarre' => $throwable->produit->getCodeBarre(),
-                ],
-            ]],
-            $throwable instanceof StockInsuffisantException => [409, ['error' => $throwable->getMessage()]],
-            $throwable instanceof TooManyLoginAttemptsException => (function () use ($throwable, &$headers) {
-                $headers['Retry-After'] = (string) $throwable->retryAfterSeconds;
-
-                return [429, ['error' => $throwable->getMessage()]];
-            })(),
             $throwable instanceof AuthenticationException => [401, ['error' => 'Authentification requise.']],
             $throwable instanceof AccessDeniedException => [403, ['error' => 'Accès refusé.']],
             $throwable instanceof HttpExceptionInterface => [
