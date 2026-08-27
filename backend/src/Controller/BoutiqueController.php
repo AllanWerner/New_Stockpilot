@@ -134,6 +134,9 @@ final class BoutiqueController extends AbstractController
         return $this->json(null, 204);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function boutiqueVersReponse(Boutique $boutique): array
     {
         return [

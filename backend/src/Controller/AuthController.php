@@ -51,6 +51,9 @@ final class AuthController extends AbstractController
         return $this->json($this->meVersReponse($employe));
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function meVersReponse(Employe $employe): array
     {
         $affectations = array_map(

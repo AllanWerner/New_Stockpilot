@@ -122,6 +122,9 @@ final class EmployeController extends AbstractController
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function employeVersReponse(Employe $employe): array
     {
         $affectations = array_map(
