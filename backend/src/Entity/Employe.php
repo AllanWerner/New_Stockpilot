@@ -37,9 +37,6 @@ class Employe implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'date_creation', type: 'datetime_immutable')]
     private \DateTimeImmutable $dateCreation;
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $actif = true;
-
     public function __construct(string $nom, string $prenom, string $email, RoleEmploye $role)
     {
         $this->nom = $nom;
@@ -107,16 +104,6 @@ class Employe implements UserInterface, PasswordAuthenticatedUserInterface
     public function isGerant(): bool
     {
         return RoleEmploye::GERANT === $this->role;
-    }
-
-    public function isActif(): bool
-    {
-        return $this->actif;
-    }
-
-    public function setActif(bool $actif): void
-    {
-        $this->actif = $actif;
     }
 
     // --- Symfony Security: UserInterface / PasswordAuthenticatedUserInterface ---

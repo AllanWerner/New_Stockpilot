@@ -17,12 +17,5 @@ interface EmployeRepositoryInterface
      */
     public function findGerants(): array;
 
-    /**
-     * @return Employe[]
-     */
-    public function findAll(): array;
-
     public function save(Employe $employe): void;
-
-    public function delete(Employe $employe): void;
 }

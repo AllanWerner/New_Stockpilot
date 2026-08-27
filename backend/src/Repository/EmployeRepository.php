@@ -41,11 +41,4 @@ final class EmployeRepository extends ServiceEntityRepository implements Employe
         $em->persist($employe);
         $em->flush();
     }
-
-    public function delete(Employe $employe): void
-    {
-        $em = $this->getEntityManager();
-        $em->remove($employe);
-        $em->flush();
-    }
 }

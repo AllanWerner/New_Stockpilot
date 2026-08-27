@@ -61,7 +61,7 @@ final class ProduitController extends AbstractController
         $boutique = null !== $dto->idBoutique ? $this->trouverBoutique($dto->idBoutique) : null;
 
         if (null !== $boutique) {
-            $this->denyAccessUnlessGranted(BoutiqueVoter::MANAGE, $boutique);
+            $this->denyAccessUnlessGranted(BoutiqueVoter::ACCESS, $boutique);
         }
 
         $produit = $this->produitService->creerManuel($dto);
@@ -107,7 +107,7 @@ final class ProduitController extends AbstractController
         }
 
         $boutique = $this->trouverBoutique($dto->idBoutique);
-        $this->denyAccessUnlessGranted(BoutiqueVoter::MANAGE, $boutique);
+        $this->denyAccessUnlessGranted(BoutiqueVoter::ACCESS, $boutique);
 
         /** @var Employe $employe */
         $employe = $this->getUser();

@@ -8,7 +8,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AuthService } from '../../../core/auth/auth.service';
 import { BoutiqueContextService } from '../../../core/boutique/boutique-context.service';
 import { Produit } from '../../../core/models/produit.model';
 import { CatalogAdjustComponent } from '../catalog-adjust/catalog-adjust.component';
@@ -37,14 +36,12 @@ export class CatalogListComponent implements OnInit {
   private readonly catalogService = inject(CatalogService);
   private readonly dialog = inject(MatDialog);
   private readonly boutiqueContext = inject(BoutiqueContextService);
-  private readonly authService = inject(AuthService);
 
   readonly displayedColumns = ['nom', 'categorie', 'codeBarre', 'prixAchat', 'stock', 'statut', 'actions'];
   readonly produits = signal<Produit[]>([]);
   readonly loading = signal(false);
   readonly searchTerm = signal('');
   readonly selectedBoutique = this.boutiqueContext.selectedBoutique;
-  readonly isVendeurSeul = this.authService.isVendeurSeul;
 
   // effect() reliably reacts to later boutique switches, but its own first
   // run isn't a dependable place to kick off the initial fetch — ngOnInit
