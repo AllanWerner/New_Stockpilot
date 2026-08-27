@@ -95,9 +95,7 @@ final class EmployeController extends AbstractController
         try {
             $this->employeRepository->delete($employe);
         } catch (ForeignKeyConstraintViolationException) {
-            throw new SuppressionImpossibleException(
-                'Impossible de supprimer : cet employé a des commandes ou mouvements de stock enregistrés. Désactivez-le plutôt.',
-            );
+            throw new SuppressionImpossibleException('Impossible de supprimer : cet employé a des commandes ou mouvements de stock enregistrés. Désactivez-le plutôt.');
         }
 
         return $this->json(null, 204);

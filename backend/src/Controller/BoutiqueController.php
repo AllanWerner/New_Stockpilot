@@ -128,9 +128,7 @@ final class BoutiqueController extends AbstractController
         try {
             $this->boutiqueRepository->delete($boutique);
         } catch (ForeignKeyConstraintViolationException) {
-            throw new SuppressionImpossibleException(
-                'Impossible de supprimer : cette boutique a des commandes ou mouvements de stock enregistrés. Désactivez-la plutôt.',
-            );
+            throw new SuppressionImpossibleException('Impossible de supprimer : cette boutique a des commandes ou mouvements de stock enregistrés. Désactivez-la plutôt.');
         }
 
         return $this->json(null, 204);
