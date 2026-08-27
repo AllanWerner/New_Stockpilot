@@ -14,6 +14,8 @@ use App\Repository\AffectationRepositoryInterface;
 use App\Repository\BoutiqueRepositoryInterface;
 use App\Repository\EmployeRepositoryInterface;
 use App\Security\AccessVoter;
+use App\Service\Exception\SuppressionImpossibleException;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -41,7 +43,10 @@ final class BoutiqueController extends AbstractController
     /**
      * Boutiques the current employee can act on: every boutique for a gérant
      * (full access), or just their Affectation rows for an employé — powers
-     * the persistent "Ma boutique" selector in the frontend header.
+     * the persistent "Ma boutique" selector in the frontend header. Includes
+     * inactive boutiques too — the frontend selector filters those out
+     * client-side, but the "Gérer l'organisation" admin page needs to see
+     * (and reactivate) them.
      */
     #[Route('', methods: ['GET'])]
     public function list(): JsonResponse
@@ -53,12 +58,7 @@ final class BoutiqueController extends AbstractController
             ? $this->boutiqueRepository->findAll()
             : $this->boutiqueRepository->findByEmploye($employe);
 
-        return $this->json(array_map(static fn (Boutique $b) => [
-            'idBoutique' => $b->getId(),
-            'nom' => $b->getNom(),
-            'adresse' => $b->getAdresse(),
-            'ville' => $b->getVille(),
-        ], $boutiques));
+        return $this->json(array_map(fn (Boutique $b) => $this->boutiqueVersReponse($b), $boutiques));
     }
 
     #[Route('', methods: ['POST'])]
@@ -68,12 +68,7 @@ final class BoutiqueController extends AbstractController
         $boutique = new Boutique($dto->nom, $dto->adresse, $dto->ville);
         $this->boutiqueRepository->save($boutique);
 
-        return $this->json([
-            'idBoutique' => $boutique->getId(),
-            'nom' => $boutique->getNom(),
-            'adresse' => $boutique->getAdresse(),
-            'ville' => $boutique->getVille(),
-        ], 201);
+        return $this->json($this->boutiqueVersReponse($boutique), 201);
     }
 
     #[Route('/{id}/affecter', methods: ['POST'])]
@@ -104,5 +99,52 @@ final class BoutiqueController extends AbstractController
             'idBoutique' => $boutique->getId(),
             'poste' => $poste->value,
         ], 200);
+    }
+
+    #[Route('/{id}/activer', methods: ['POST'])]
+    #[IsGranted('ROLE_GERANT')]
+    public function activer(#[MapEntity(id: 'id')] Boutique $boutique): JsonResponse
+    {
+        $boutique->setActif(true);
+        $this->boutiqueRepository->save($boutique);
+
+        return $this->json($this->boutiqueVersReponse($boutique));
+    }
+
+    #[Route('/{id}/desactiver', methods: ['POST'])]
+    #[IsGranted('ROLE_GERANT')]
+    public function desactiver(#[MapEntity(id: 'id')] Boutique $boutique): JsonResponse
+    {
+        $boutique->setActif(false);
+        $this->boutiqueRepository->save($boutique);
+
+        return $this->json($this->boutiqueVersReponse($boutique));
+    }
+
+    #[Route('/{id}', methods: ['DELETE'])]
+    #[IsGranted('ROLE_GERANT')]
+    public function supprimer(#[MapEntity(id: 'id')] Boutique $boutique): JsonResponse
+    {
+        try {
+            $this->boutiqueRepository->delete($boutique);
+        } catch (ForeignKeyConstraintViolationException) {
+            throw new SuppressionImpossibleException('Impossible de supprimer : cette boutique a des commandes ou mouvements de stock enregistrés. Désactivez-la plutôt.');
+        }
+
+        return $this->json(null, 204);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function boutiqueVersReponse(Boutique $boutique): array
+    {
+        return [
+            'idBoutique' => $boutique->getId(),
+            'nom' => $boutique->getNom(),
+            'adresse' => $boutique->getAdresse(),
+            'ville' => $boutique->getVille(),
+            'actif' => $boutique->isActif(),
+        ];
     }
 }
