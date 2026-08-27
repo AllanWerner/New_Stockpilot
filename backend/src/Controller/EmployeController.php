@@ -10,9 +10,13 @@ use App\Entity\Enum\RoleEmploye;
 use App\Repository\AffectationRepositoryInterface;
 use App\Repository\EmployeRepositoryInterface;
 use App\Service\Exception\EmployeDejaExistantException;
+use App\Service\Exception\SuppressionImpossibleException;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -57,6 +61,69 @@ final class EmployeController extends AbstractController
         return $this->json($this->employeVersReponse($employe), 201);
     }
 
+    #[Route('/{id}/activer', methods: ['POST'])]
+    #[IsGranted('ROLE_GERANT')]
+    public function activer(int $id): JsonResponse
+    {
+        $employe = $this->trouverEmploye($id);
+        $employe->setActif(true);
+        $this->employeRepository->save($employe);
+
+        return $this->json($this->employeVersReponse($employe));
+    }
+
+    #[Route('/{id}/desactiver', methods: ['POST'])]
+    #[IsGranted('ROLE_GERANT')]
+    public function desactiver(int $id): JsonResponse
+    {
+        $employe = $this->trouverEmploye($id);
+        $this->interdireAutoModification($employe);
+
+        $employe->setActif(false);
+        $this->employeRepository->save($employe);
+
+        return $this->json($this->employeVersReponse($employe));
+    }
+
+    #[Route('/{id}', methods: ['DELETE'])]
+    #[IsGranted('ROLE_GERANT')]
+    public function supprimer(int $id): JsonResponse
+    {
+        $employe = $this->trouverEmploye($id);
+        $this->interdireAutoModification($employe);
+
+        try {
+            $this->employeRepository->delete($employe);
+        } catch (ForeignKeyConstraintViolationException) {
+            throw new SuppressionImpossibleException(
+                'Impossible de supprimer : cet employé a des commandes ou mouvements de stock enregistrés. Désactivez-le plutôt.',
+            );
+        }
+
+        return $this->json(null, 204);
+    }
+
+    private function trouverEmploye(int $id): Employe
+    {
+        $employe = $this->employeRepository->find($id);
+
+        if (null === $employe) {
+            throw new NotFoundHttpException('Employé introuvable.');
+        }
+
+        return $employe;
+    }
+
+    private function interdireAutoModification(Employe $employe): void
+    {
+        /** @var Employe $courant */
+        $courant = $this->getUser();
+
+        if ($courant->getId() === $employe->getId()) {
+            throw new ConflictHttpException('Vous ne pouvez pas désactiver ou supprimer votre propre compte.');
+        }
+    }
+
     private function employeVersReponse(Employe $employe): array
     {
         $affectations = array_map(
@@ -74,6 +141,7 @@ final class EmployeController extends AbstractController
             'prenom' => $employe->getPrenom(),
             'email' => $employe->getEmail(),
             'role' => $employe->getRole()->value,
+            'actif' => $employe->isActif(),
             'boutiques' => $affectations,
         ];
     }

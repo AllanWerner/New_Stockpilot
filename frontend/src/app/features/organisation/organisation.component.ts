@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AuthService } from '../../core/auth/auth.service';
 import { Boutique } from '../../core/models/boutique.model';
 import { Employe } from '../../core/models/employe.model';
 import { OrganisationAffecterFormComponent } from './organisation-affecter-form/organisation-affecter-form.component';
@@ -33,13 +34,15 @@ import { OrganisationService } from './organisation.service';
 export class OrganisationComponent implements OnInit {
   private readonly organisationService = inject(OrganisationService);
   private readonly dialog = inject(MatDialog);
+  private readonly authService = inject(AuthService);
 
-  readonly employeColumns = ['nom', 'email', 'role', 'boutiques'];
-  readonly boutiqueColumns = ['nom', 'adresse', 'ville', 'actions'];
+  readonly employeColumns = ['nom', 'email', 'role', 'boutiques', 'statut', 'actions'];
+  readonly boutiqueColumns = ['nom', 'adresse', 'ville', 'statut', 'actions'];
 
   readonly employes = signal<Employe[]>([]);
   readonly boutiques = signal<Boutique[]>([]);
   readonly loading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
 
   ngOnInit(): void {
     this.reload();
@@ -90,5 +93,69 @@ export class OrganisationComponent implements OnInit {
         this.reload();
       }
     });
+  }
+
+  estMoi(employe: Employe): boolean {
+    return employe.idEmploye === this.authService.currentUser()?.idEmploye;
+  }
+
+  toggleEmployeActif(employe: Employe): void {
+    this.errorMessage.set(null);
+    const action = employe.actif
+      ? this.organisationService.desactiverEmploye(employe.idEmploye)
+      : this.organisationService.activerEmploye(employe.idEmploye);
+
+    action.subscribe({
+      next: () => this.reload(),
+      error: (err: unknown) => this.errorMessage.set(this.messageErreur(err)),
+    });
+  }
+
+  supprimerEmploye(employe: Employe): void {
+    if (!confirm(`Supprimer définitivement ${employe.prenom} ${employe.nom} ?`)) {
+      return;
+    }
+
+    this.errorMessage.set(null);
+    this.organisationService.supprimerEmploye(employe.idEmploye).subscribe({
+      next: () => this.reload(),
+      error: (err: unknown) => this.errorMessage.set(this.messageErreur(err)),
+    });
+  }
+
+  toggleBoutiqueActif(boutique: Boutique): void {
+    this.errorMessage.set(null);
+    const action = boutique.actif
+      ? this.organisationService.desactiverBoutique(boutique.idBoutique)
+      : this.organisationService.activerBoutique(boutique.idBoutique);
+
+    action.subscribe({
+      next: () => this.reload(),
+      error: (err: unknown) => this.errorMessage.set(this.messageErreur(err)),
+    });
+  }
+
+  supprimerBoutique(boutique: Boutique): void {
+    if (!confirm(`Supprimer définitivement la boutique ${boutique.nom} ?`)) {
+      return;
+    }
+
+    this.errorMessage.set(null);
+    this.organisationService.supprimerBoutique(boutique.idBoutique).subscribe({
+      next: () => this.reload(),
+      error: (err: unknown) => this.errorMessage.set(this.messageErreur(err)),
+    });
+  }
+
+  private messageErreur(err: unknown): string {
+    if (err instanceof Object && 'error' in err) {
+      const body = (err as { error?: { error?: string } }).error;
+
+      if (body?.error) {
+        return body.error;
+      }
+    }
+
+    return "Une erreur est survenue.";
   }
 }

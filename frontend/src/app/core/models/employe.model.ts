@@ -6,6 +6,7 @@ export interface Employe {
   prenom: string;
   email: string;
   role: RoleEmploye;
+  actif: boolean;
   boutiques: BoutiqueAffectation[];
 }
 

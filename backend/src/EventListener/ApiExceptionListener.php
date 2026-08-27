@@ -11,6 +11,7 @@ use App\Service\Exception\LigneCommandeIntrouvableException;
 use App\Service\Exception\ProduitDejaExistantException;
 use App\Service\Exception\QuantiteRecueInvalideException;
 use App\Service\Exception\StockInsuffisantException;
+use App\Service\Exception\SuppressionImpossibleException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -73,6 +74,7 @@ final class ApiExceptionListener implements EventSubscriberInterface
             ]],
             $throwable instanceof StockInsuffisantException => [409, ['error' => $throwable->getMessage()]],
             $throwable instanceof EmployeDejaExistantException => [409, ['error' => $throwable->getMessage()]],
+            $throwable instanceof SuppressionImpossibleException => [409, ['error' => $throwable->getMessage()]],
             $throwable instanceof LigneCommandeIntrouvableException => [404, ['error' => $throwable->getMessage()]],
             $throwable instanceof QuantiteRecueInvalideException => [422, ['error' => $throwable->getMessage()]],
             $throwable instanceof AuthenticationException => [401, ['error' => 'Authentification requise.']],

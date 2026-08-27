@@ -76,7 +76,7 @@ final class AuthService
     {
         $employe = $this->employeRepository->findByEmail($email);
 
-        if (null === $employe || !$this->passwordHasher->isPasswordValid($employe, $motDePasse)) {
+        if (null === $employe || !$this->passwordHasher->isPasswordValid($employe, $motDePasse) || !$employe->isActif()) {
             throw new InvalidCredentialsException();
         }
 
