@@ -6,6 +6,7 @@ namespace App\EventListener;
 
 use App\Security\Exception\InvalidCredentialsException;
 use App\Security\Exception\TooManyLoginAttemptsException;
+use App\Service\Exception\EmployeDejaExistantException;
 use App\Service\Exception\LigneCommandeIntrouvableException;
 use App\Service\Exception\ProduitDejaExistantException;
 use App\Service\Exception\QuantiteRecueInvalideException;
@@ -71,6 +72,7 @@ final class ApiExceptionListener implements EventSubscriberInterface
                 ],
             ]],
             $throwable instanceof StockInsuffisantException => [409, ['error' => $throwable->getMessage()]],
+            $throwable instanceof EmployeDejaExistantException => [409, ['error' => $throwable->getMessage()]],
             $throwable instanceof LigneCommandeIntrouvableException => [404, ['error' => $throwable->getMessage()]],
             $throwable instanceof QuantiteRecueInvalideException => [422, ['error' => $throwable->getMessage()]],
             $throwable instanceof AuthenticationException => [401, ['error' => 'Authentification requise.']],

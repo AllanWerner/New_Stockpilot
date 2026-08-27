@@ -13,6 +13,20 @@ export class AuthService {
   readonly currentUser = this.currentUserSignal.asReadonly();
   readonly isGerant = computed(() => this.currentUserSignal()?.role === 'GERANT');
 
+  // A "salesperson-only" account: an EMPLOYE whose every affectation is
+  // VENDEUR (never RESPONSABLE) — VENDEUR isn't a global role, it's a
+  // per-boutique poste on Affectation, so this has to be derived here.
+  readonly isVendeurSeul = computed(() => {
+    const user = this.currentUserSignal();
+
+    return (
+      !!user &&
+      user.role === 'EMPLOYE' &&
+      user.boutiques.length > 0 &&
+      user.boutiques.every((b) => b.poste === 'VENDEUR')
+    );
+  });
+
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
@@ -26,6 +40,16 @@ export class AuthService {
 
   chargerProfil(): Observable<MeResponse> {
     return this.http.get<MeResponse>(`${environment.apiUrl}/auth/me`).pipe(
+      tap((me) => this.currentUserSignal.set(me)),
+    );
+  }
+
+  modifierCompte(payload: {
+    motDePasseActuel: string;
+    email?: string;
+    nouveauMotDePasse?: string;
+  }): Observable<MeResponse> {
+    return this.http.post<MeResponse>(`${environment.apiUrl}/auth/me/modifier`, payload).pipe(
       tap((me) => this.currentUserSignal.set(me)),
     );
   }
