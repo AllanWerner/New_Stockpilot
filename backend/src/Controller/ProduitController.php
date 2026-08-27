@@ -17,6 +17,7 @@ use App\Repository\BoutiqueRepositoryInterface;
 use App\Repository\ProduitRepositoryInterface;
 use App\Repository\StockRepositoryInterface;
 use App\Security\BoutiqueVoter;
+use App\Service\NotificationService;
 use App\Service\ProduitService;
 use App\Service\StockService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,6 +37,7 @@ final class ProduitController extends AbstractController
         private readonly BoutiqueRepositoryInterface $boutiqueRepository,
         private readonly StockRepositoryInterface $stockRepository,
         private readonly ProduitRepositoryInterface $produitRepository,
+        private readonly NotificationService $notificationService,
     ) {
     }
 
@@ -60,6 +62,21 @@ final class ProduitController extends AbstractController
     #[Route('', methods: ['POST'])]
     public function create(#[MapRequestPayload] CreateProduitRequestDto $dto): JsonResponse
     {
+        if ($dto->toutesBoutiques) {
+            // Assigning stock everywhere at once is a gérant-only move — a
+            // RESPONSABLE only has MANAGE rights on their own boutique(s),
+            // never every boutique in the system.
+            $this->denyAccessUnlessGranted('ROLE_GERANT');
+
+            $produit = $this->produitService->creerManuel($dto);
+
+            foreach ($this->boutiqueRepository->findAll() as $boutique) {
+                $this->stockService->definirSeuil($produit, $boutique, $dto->seuilReappro, $dto->quantiteCommandeReco);
+            }
+
+            return $this->json($this->produitVersReponse($produit, null), 201);
+        }
+
         $boutique = null !== $dto->idBoutique ? $this->trouverBoutique($dto->idBoutique) : null;
 
         if (null !== $boutique) {
@@ -118,6 +135,12 @@ final class ProduitController extends AbstractController
             $this->stockService->incrementerStock($produit, $boutique, $dto->quantite, TypeMouvement::AJUSTEMENT, $employe);
         } else {
             $this->stockService->decrementerStock($produit, $boutique, abs($dto->quantite), TypeMouvement::AJUSTEMENT, $employe);
+        }
+
+        $stock = $this->stockRepository->findOneByProduitAndBoutique($produit, $boutique);
+
+        if (null !== $stock) {
+            $this->notificationService->notifierAjustement($stock, $dto->quantite, $employe);
         }
 
         return $this->json($this->produitVersReponse($produit, $dto->idBoutique));

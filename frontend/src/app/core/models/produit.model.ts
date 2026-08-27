@@ -50,6 +50,7 @@ export interface CreateProduitPayload {
   unite: string;
   idCategorie: number;
   idBoutique?: number;
+  toutesBoutiques?: boolean;
   seuilReappro?: number;
   quantiteCommandeReco?: number;
 }

@@ -48,6 +48,14 @@ export class CatalogFormComponent implements OnInit {
   readonly categories = signal<Categorie[]>([]);
   readonly isGerant = this.authService.isGerant;
 
+  // Only a gérant can pick between the current boutique / no boutique / all
+  // boutiques — a RESPONSABLE always assigns to their own boutique context,
+  // matching the previous (pre-choice) behavior, so the mode is fixed for
+  // them and the picker itself stays hidden.
+  readonly modeAssignation = signal<'aucune' | 'boutique' | 'toutes'>(
+    this.idBoutique !== null ? 'boutique' : 'aucune',
+  );
+
   readonly form = this.fb.nonNullable.group({
     nom: ['', Validators.required],
     prixAchat: ['0.00', [Validators.required, Validators.pattern(/^\d+(\.\d{1,2})?$/)]],
@@ -82,6 +90,7 @@ export class CatalogFormComponent implements OnInit {
     this.loading.set(true);
     this.errorMessage.set(null);
     const raw = this.form.getRawValue();
+    const mode = this.modeAssignation();
 
     this.catalogService
       .create({
@@ -90,8 +99,9 @@ export class CatalogFormComponent implements OnInit {
         unite: raw.unite,
         idCategorie: raw.idCategorie!,
         codeBarre: raw.codeBarre || undefined,
-        idBoutique: this.idBoutique ?? undefined,
-        seuilReappro: this.idBoutique ? raw.seuilReappro : undefined,
+        idBoutique: mode === 'boutique' ? (this.idBoutique ?? undefined) : undefined,
+        toutesBoutiques: mode === 'toutes',
+        seuilReappro: mode !== 'aucune' ? raw.seuilReappro : undefined,
       })
       .subscribe({
         next: (produit: Produit) => {
