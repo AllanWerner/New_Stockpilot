@@ -1,0 +1,56 @@
+<div class="sp-mouvements">
+  <h1>Historique des mouvements</h1>
+  <p class="sp-mouvements__subtitle">Réceptions et transferts de stock.</p>
+
+  @if (loading()) {
+    <div class="sp-mouvements__loading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else {
+    <table mat-table [dataSource]="mouvements()" class="sp-mouvements__table">
+      <ng-container matColumnDef="dateMouvement">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let m" class="sp-mono">{{ m.dateMouvement | date: 'dd/MM/yyyy' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>Type</th>
+        <td mat-cell *matCellDef="let m">
+          <mat-icon [matTooltip]="typeLabel(m.type)" inline>{{ typeIcone(m.type) }}</mat-icon>
+          {{ typeLabel(m.type) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="produit">
+        <th mat-header-cell *matHeaderCellDef>Produit</th>
+        <td mat-cell *matCellDef="let m">{{ m.produit.nom }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="boutique">
+        <th mat-header-cell *matHeaderCellDef>Boutique</th>
+        <td mat-cell *matCellDef="let m">{{ m.boutique.nom }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="quantite">
+        <th mat-header-cell *matHeaderCellDef>Quantité</th>
+        <td mat-cell *matCellDef="let m" class="sp-mono">{{ m.quantite }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="commande">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let m">
+          @if (m.idCommande) {
+            <a [routerLink]="['/commandes', m.idCommande]">Commande #{{ m.idCommande }}</a>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    @if (mouvements().length === 0) {
+      <p class="sp-mouvements__empty">Aucun mouvement trouvé.</p>
+    }
+  }
+</div>

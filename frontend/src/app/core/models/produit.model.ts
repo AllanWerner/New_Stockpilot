@@ -3,6 +3,10 @@ export interface Categorie {
   nom: string;
 }
 
+export interface CreateCategoriePayload {
+  nom: string;
+}
+
 export interface StockInfo {
   quantiteActuelle: number;
   seuilReappro: number;

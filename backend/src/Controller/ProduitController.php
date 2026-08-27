@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Dto\Request\AjustementStockRequestDto;
 use App\Dto\Request\CreateProduitRequestDto;
+use App\Dto\Request\ModifierPrixRequestDto;
 use App\Dto\Request\ProduitListRequestDto;
 use App\Dto\Request\ScanProduitRequestDto;
 use App\Entity\Boutique;
@@ -24,6 +25,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/produits')]
 final class ProduitController extends AbstractController
@@ -119,6 +121,30 @@ final class ProduitController extends AbstractController
         }
 
         return $this->json($this->produitVersReponse($produit, $dto->idBoutique));
+    }
+
+    /**
+     * Prix d'achat (CDCF F2) — a product's price is a single value shared
+     * across every boutique (no per-boutique price row exists in the schema),
+     * so there's nothing boutique-scoped to check here beyond the gérant
+     * role: the frontend only shows this action in the consolidated "Toutes
+     * boutiques" view to avoid implying a per-boutique price that doesn't
+     * exist.
+     */
+    #[Route('/{id}/prix', methods: ['POST'])]
+    #[IsGranted('ROLE_GERANT')]
+    public function modifierPrix(int $id, #[MapRequestPayload] ModifierPrixRequestDto $dto): JsonResponse
+    {
+        $produit = $this->produitRepository->find($id);
+
+        if (null === $produit) {
+            throw new NotFoundHttpException('Produit introuvable.');
+        }
+
+        $produit->setPrixAchat($dto->prixAchat);
+        $this->produitRepository->save($produit);
+
+        return $this->json($this->produitVersReponse($produit, null));
     }
 
     private function trouverBoutique(int $id): Boutique
