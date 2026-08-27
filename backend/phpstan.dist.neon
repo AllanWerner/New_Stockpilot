@@ -1,0 +1,17 @@
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+    tmpDir: var/cache/phpstan
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    ignoreErrors:
+        -
+            # Doctrine populates identifier properties via reflection (GeneratedValue),
+            # never via a PHP assignment PHPStan can see. Wiring phpstan-doctrine's full
+            # ObjectManager-reflection bootstrap is deferred past this vertical slice.
+            message: '#Property App\\Entity\\.*::\$id \(int\|null\) is never assigned int so it can be removed from the property type\.#'
+            path: src/Entity

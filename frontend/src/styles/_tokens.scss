@@ -1,0 +1,25 @@
+// StockPilot charte graphique (Jalon 2 — Méthodologie & Conception UI/UX).
+
+// Backgrounds & surfaces
+$sp-bg: #F7F5F0; // fond principal, sable clair
+$sp-card: #FFFFFF; // cartes, tableaux, sidebar de contenu
+$sp-sidebar: #1A3A2B; // vert forêt profond, fond de la navigation latérale
+
+// Accents
+$sp-primary: #1F6D48; // vert forêt, actions principales / nav active
+$sp-secondary: #C6633C; // terracotta, statut commande / éléments fournisseurs
+
+// Text
+$sp-text-primary: #2B2B26;
+$sp-text-secondary: #6B665C;
+$sp-text-on-sidebar: #F7F5F0;
+
+// Stock status
+$sp-status-rupture: #D64545;
+$sp-status-critique: #E8A33D;
+$sp-status-ok: #3F8F5F;
+
+// Fonts
+$sp-font-heading: 'Poppins', sans-serif;
+$sp-font-body: 'Inter', sans-serif;
+$sp-font-mono: 'Roboto Mono', monospace;

@@ -1,0 +1,41 @@
+@use '../../../../styles/tokens' as t;
+
+.sp-commandes__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h1 {
+    font-family: t.$sp-font-heading;
+    margin: 0;
+  }
+}
+
+.sp-commandes__hint {
+  color: t.$sp-text-secondary;
+  font-size: 13px;
+}
+
+.sp-commandes__table {
+  width: 100%;
+  background-color: t.$sp-card;
+  border-radius: 8px;
+  overflow: hidden;
+
+  tr[mat-row] {
+    cursor: pointer;
+  }
+}
+
+.sp-commandes__loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.sp-commandes__empty {
+  color: t.$sp-text-secondary;
+  text-align: center;
+  padding: 24px 0;
+}

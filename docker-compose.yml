@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-stockpilot}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-stockpilot}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  php:
+    build:
+      context: ./backend
+    volumes:
+      - ./backend:/var/www/html
+      # var/cache and var/log are isolated in named volumes (not the Windows
+      # bind mount) — Symfony's cache-warmup directory swap can otherwise fail
+      # with "Directory not empty" on Docker Desktop's Windows file sharing.
+      - backend_var_cache:/var/www/html/var/cache
+      - backend_var_log:/var/www/html/var/log
+      # vendor/ (~7k PHP files) never needs live-editing, but with opcache's
+      # validate_timestamps on, every request stats every loaded file — over
+      # the Windows bind mount that made requests take 10-15s. Isolating it
+      # in a named volume keeps live-reload for src/ while removing vendor/
+      # from that slow path. Caveat: Docker only seeds a named volume from
+      # the image the first time it's created — after a composer.lock
+      # change, run `docker compose exec php composer install` (or remove
+      # the volume with `docker volume rm stockpilotn_backend_vendor`) to
+      # refresh it.
+      - backend_vendor:/var/www/html/vendor
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+      APP_SECRET: ${APP_SECRET:-dev-secret-change-me}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@db:5432/${POSTGRES_DB:-stockpilot}?serverVersion=16&charset=utf8
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-dev-jwt-passphrase-change-me}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN:-^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$$}
+      OFF_API_BASE_URL: ${OFF_API_BASE_URL:-https://world.openfoodfacts.org}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    ports:
+      - '${HTTP_PORT:-80}:80'
+    depends_on:
+      - php
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - '${ADMINER_PORT:-8080}:8080'
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+  backend_var_cache:
+  backend_var_log:
+  backend_vendor:
