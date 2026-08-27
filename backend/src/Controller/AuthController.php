@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\Request\LoginRequestDto;
+use App\Dto\Request\UpdateCompteRequestDto;
 use App\Entity\Employe;
 use App\Repository\AffectationRepositoryInterface;
 use App\Service\AuthService;
@@ -36,6 +37,25 @@ final class AuthController extends AbstractController
         /** @var Employe $employe */
         $employe = $this->getUser();
 
+        return $this->json($this->meVersReponse($employe));
+    }
+
+    #[Route('/me/modifier', methods: ['POST'])]
+    public function modifier(#[MapRequestPayload] UpdateCompteRequestDto $dto): JsonResponse
+    {
+        /** @var Employe $employe */
+        $employe = $this->getUser();
+
+        $this->authService->modifierCompte($employe, $dto);
+
+        return $this->json($this->meVersReponse($employe));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function meVersReponse(Employe $employe): array
+    {
         $affectations = array_map(
             static fn ($affectation) => [
                 'idBoutique' => $affectation->getBoutique()->getId(),
@@ -45,13 +65,13 @@ final class AuthController extends AbstractController
             $this->affectationRepository->findByEmploye($employe),
         );
 
-        return $this->json([
+        return [
             'idEmploye' => $employe->getId(),
             'nom' => $employe->getNom(),
             'prenom' => $employe->getPrenom(),
             'email' => $employe->getEmail(),
             'role' => $employe->getRole()->value,
             'boutiques' => $affectations,
-        ]);
+        ];
     }
 }
