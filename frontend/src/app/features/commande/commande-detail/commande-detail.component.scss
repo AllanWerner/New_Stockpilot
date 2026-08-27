@@ -1,0 +1,66 @@
+@use '../../../../styles/tokens' as t;
+
+.sp-commande-detail__loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.sp-commande-detail__back {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: t.$sp-text-secondary;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.sp-commande-detail__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  h1 {
+    font-family: t.$sp-font-heading;
+    margin: 0 0 4px;
+  }
+}
+
+.sp-commande-detail__meta {
+  color: t.$sp-text-secondary;
+  font-size: 13px;
+  margin: 0;
+}
+
+.sp-commande-detail__table {
+  width: 100%;
+  background-color: t.$sp-card;
+  border-radius: 8px;
+  border-collapse: collapse;
+  overflow: hidden;
+
+  th,
+  td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid t.$sp-bg;
+  }
+
+  input {
+    width: 80px;
+    border: none;
+    background: transparent;
+    font: inherit;
+  }
+}
+
+.sp-commande-detail__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.sp-form__error {
+  color: t.$sp-status-rupture;
+  font-size: 13px;
+}

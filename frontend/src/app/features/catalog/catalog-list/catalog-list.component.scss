@@ -1,0 +1,48 @@
+@use '../../../../styles/tokens' as t;
+
+.sp-catalog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h1 {
+    font-family: t.$sp-font-heading;
+    margin: 0;
+  }
+}
+
+.sp-catalog__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.sp-catalog__search {
+  width: 100%;
+  max-width: 400px;
+}
+
+.sp-catalog__hint {
+  color: t.$sp-text-secondary;
+  font-size: 13px;
+  margin: -8px 0 12px;
+}
+
+.sp-catalog__table {
+  width: 100%;
+  background-color: t.$sp-card;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sp-catalog__loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.sp-catalog__empty {
+  color: t.$sp-text-secondary;
+  text-align: center;
+  padding: 24px 0;
+}

@@ -1,0 +1,65 @@
+@use 'sass:color';
+@use '@angular/material' as mat;
+@use 'tokens' as t;
+
+// Angular Material's legacy (M2) theming API needs a full 50–900 + A100–A700
+// shade map per palette. Generated here from a single brand hex by interpolating
+// toward white/black at the standard Material weight stops, rather than hand
+// authoring 14 shades per color for a project with only two brand accents.
+@function sp-palette($base) {
+  @return (
+    50: color.mix(white, $base, 88%),
+    100: color.mix(white, $base, 76%),
+    200: color.mix(white, $base, 62%),
+    300: color.mix(white, $base, 48%),
+    400: color.mix(white, $base, 32%),
+    500: $base,
+    600: color.mix(black, $base, 10%),
+    700: color.mix(black, $base, 20%),
+    800: color.mix(black, $base, 30%),
+    900: color.mix(black, $base, 40%),
+    A100: color.mix(white, $base, 60%),
+    A200: color.mix(white, $base, 40%),
+    A400: color.mix(black, $base, 15%),
+    A700: color.mix(black, $base, 25%),
+    contrast: (
+      50: t.$sp-text-primary,
+      100: t.$sp-text-primary,
+      200: t.$sp-text-primary,
+      300: t.$sp-text-primary,
+      400: white,
+      500: white,
+      600: white,
+      700: white,
+      800: white,
+      900: white,
+      A100: t.$sp-text-primary,
+      A200: white,
+      A400: white,
+      A700: white,
+    ),
+  );
+}
+
+$sp-primary-palette: mat.define-palette(sp-palette(t.$sp-primary));
+$sp-accent-palette: mat.define-palette(sp-palette(t.$sp-secondary));
+$sp-warn-palette: mat.define-palette(sp-palette(t.$sp-status-rupture));
+
+$sp-typography: mat.define-typography-config(
+  $font-family: t.$sp-font-body,
+  $headline-1: mat.define-typography-level(32px, 40px, 600, t.$sp-font-heading),
+  $headline-2: mat.define-typography-level(28px, 36px, 600, t.$sp-font-heading),
+  $headline-3: mat.define-typography-level(22px, 30px, 600, t.$sp-font-heading),
+  $subtitle-1: mat.define-typography-level(16px, 24px, 500, t.$sp-font-heading),
+  $button: mat.define-typography-level(14px, 14px, 500, t.$sp-font-heading),
+);
+
+$sp-theme: mat.define-light-theme((
+  color: (
+    primary: $sp-primary-palette,
+    accent: $sp-accent-palette,
+    warn: $sp-warn-palette,
+  ),
+  typography: $sp-typography,
+  density: 0,
+));

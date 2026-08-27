@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>Ajuster le stock — {{ data.nom }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="sp-form">
+    <p class="sp-form__hint">Stock actuel : <strong>{{ data.quantiteActuelle }}</strong></p>
+
+    <mat-form-field appearance="outline" class="sp-form__field">
+      <mat-label>Quantité (positive pour ajouter, négative pour retirer)</mat-label>
+      <input matInput type="number" formControlName="quantite" />
+      <mat-hint>Ex. -2 pour une casse constatée, +5 pour un inventaire corrigé.</mat-hint>
+    </mat-form-field>
+
+    @if (errorMessage(); as message) {
+      <p class="sp-form__error">{{ message }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="loading()">Annuler</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="loading()">
+      @if (loading()) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        Ajuster
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

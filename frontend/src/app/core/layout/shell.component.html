@@ -1,0 +1,67 @@
+<div class="sp-shell">
+  <aside class="sp-sidebar">
+    <div class="sp-sidebar__brand">
+      <span class="sp-sidebar__title">StockPilot</span>
+    </div>
+
+    <mat-nav-list class="sp-sidebar__nav">
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="sp-nav-active">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Tableau de bord</span>
+      </a>
+      <a mat-list-item routerLink="/catalogue" routerLinkActive="sp-nav-active">
+        <mat-icon matListItemIcon>inventory_2</mat-icon>
+        <span matListItemTitle>Catalogue</span>
+      </a>
+      <a mat-list-item routerLink="/commandes" routerLinkActive="sp-nav-active">
+        <mat-icon matListItemIcon>local_shipping</mat-icon>
+        <span matListItemTitle>Commandes</span>
+      </a>
+      <a mat-list-item routerLink="/notifications" routerLinkActive="sp-nav-active">
+        <mat-icon matListItemIcon [matBadge]="compteNotificationsNonLues() || undefined" matBadgeColor="warn" matBadgeSize="small">
+          notifications
+        </mat-icon>
+        <span matListItemTitle>Notifications</span>
+      </a>
+    </mat-nav-list>
+  </aside>
+
+  <div class="sp-main">
+    <mat-toolbar class="sp-header">
+      @if (boutiques().length > 0) {
+        <button mat-button [matMenuTriggerFor]="boutiqueMenu" class="sp-header__boutique">
+          <mat-icon>storefront</mat-icon>
+          {{ selectedBoutique()?.nom ?? 'Toutes boutiques' }}
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #boutiqueMenu="matMenu">
+          @if (currentUser()?.role === 'GERANT') {
+            <button mat-menu-item (click)="selectionnerBoutique(null)">Toutes boutiques</button>
+          }
+          @for (boutique of boutiques(); track boutique.idBoutique) {
+            <button mat-menu-item (click)="selectionnerBoutique(boutique.idBoutique)">{{ boutique.nom }}</button>
+          }
+        </mat-menu>
+      }
+
+      <span class="sp-header__spacer"></span>
+
+      @if (currentUser(); as user) {
+        <button mat-button [matMenuTriggerFor]="userMenu">
+          <mat-icon>account_circle</mat-icon>
+          {{ user.prenom }} {{ user.nom }}
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </mat-menu>
+      }
+    </mat-toolbar>
+
+    <main class="sp-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
