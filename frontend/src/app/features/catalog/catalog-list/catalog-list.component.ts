@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -32,7 +32,7 @@ import { CatalogService } from '../catalog.service';
   templateUrl: './catalog-list.component.html',
   styleUrl: './catalog-list.component.scss',
 })
-export class CatalogListComponent {
+export class CatalogListComponent implements OnInit {
   private readonly catalogService = inject(CatalogService);
   private readonly dialog = inject(MatDialog);
   private readonly boutiqueContext = inject(BoutiqueContextService);
@@ -43,13 +43,29 @@ export class CatalogListComponent {
   readonly searchTerm = signal('');
   readonly selectedBoutique = this.boutiqueContext.selectedBoutique;
 
+  // effect() reliably reacts to later boutique switches, but its own first
+  // run isn't a dependable place to kick off the initial fetch — ngOnInit
+  // owns that instead, and this flag stops the effect from double-firing it.
+  private isFirstRun = true;
+
   constructor() {
     // Re-fetch whenever the header's "Ma boutique" selection changes, so the
     // per-boutique stock/status columns always reflect the active context.
     effect(() => {
       this.boutiqueContext.selectedId();
+
+      if (this.isFirstRun) {
+        this.isFirstRun = false;
+
+        return;
+      }
+
       this.reload();
     });
+  }
+
+  ngOnInit(): void {
+    this.reload();
   }
 
   reload(): void {

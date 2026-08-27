@@ -43,7 +43,7 @@ pris sur la machine hôte — un service Windows préexistant l'occupe souvent).
 docker compose up -d db php   # backend seul
 cd frontend
 npm install
-npm start   # ng serve, proxy /api vers localhost:80 (voir proxy.conf.json)
+npm start   # ng serve, proxy /api vers localhost:$HTTP_PORT (lu depuis .env, voir proxy.conf.js)
 ```
 
 ## Tests
