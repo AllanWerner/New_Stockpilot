@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../core/auth/auth.service';
@@ -21,7 +21,7 @@ interface ChartPoint {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly dashboardService = inject(DashboardService);
   private readonly boutiqueContext = inject(BoutiqueContextService);
@@ -57,11 +57,27 @@ export class DashboardComponent {
 
   readonly chartPolyline = computed(() => this.chartDots().map((p) => `${p.x},${p.y}`).join(' '));
 
+  // effect() reliably reacts to later boutique switches, but its own first
+  // run isn't a dependable place to kick off the initial fetch — ngOnInit
+  // owns that instead, and this flag stops the effect from double-firing it.
+  private isFirstRun = true;
+
   constructor() {
     effect(() => {
       this.boutiqueContext.selectedId();
+
+      if (this.isFirstRun) {
+        this.isFirstRun = false;
+
+        return;
+      }
+
       this.reload();
     });
+  }
+
+  ngOnInit(): void {
+    this.reload();
   }
 
   private reload(): void {
