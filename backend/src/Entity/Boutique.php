@@ -25,9 +25,6 @@ class Boutique
     #[ORM\Column(length: 100)]
     private string $ville;
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $actif = true;
-
     public function __construct(string $nom, string $adresse, string $ville)
     {
         $this->nom = $nom;
@@ -68,15 +65,5 @@ class Boutique
     public function setVille(string $ville): void
     {
         $this->ville = $ville;
-    }
-
-    public function isActif(): bool
-    {
-        return $this->actif;
-    }
-
-    public function setActif(bool $actif): void
-    {
-        $this->actif = $actif;
     }
 }
