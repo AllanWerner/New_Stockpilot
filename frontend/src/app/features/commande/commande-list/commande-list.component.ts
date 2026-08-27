@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -16,7 +16,7 @@ import { CommandeService } from '../commande.service';
   templateUrl: './commande-list.component.html',
   styleUrl: './commande-list.component.scss',
 })
-export class CommandeListComponent {
+export class CommandeListComponent implements OnInit {
   private readonly commandeService = inject(CommandeService);
   private readonly boutiqueContext = inject(BoutiqueContextService);
   private readonly router = inject(Router);
@@ -27,9 +27,20 @@ export class CommandeListComponent {
   readonly selectedBoutique = this.boutiqueContext.selectedBoutique;
   readonly canCreer = computed(() => this.selectedBoutique() !== null);
 
+  // effect() reliably reacts to later boutique switches, but its own first
+  // run isn't a dependable place to kick off the initial fetch — ngOnInit
+  // owns that instead, and this flag stops the effect from double-firing it.
+  private isFirstRun = true;
+
   constructor() {
     effect(() => {
       const idBoutique = this.boutiqueContext.selectedId();
+
+      if (this.isFirstRun) {
+        this.isFirstRun = false;
+
+        return;
+      }
 
       if (idBoutique !== null) {
         this.reload(idBoutique);
@@ -37,6 +48,14 @@ export class CommandeListComponent {
         this.commandes.set([]);
       }
     });
+  }
+
+  ngOnInit(): void {
+    const idBoutique = this.boutiqueContext.selectedId();
+
+    if (idBoutique !== null) {
+      this.reload(idBoutique);
+    }
   }
 
   reload(idBoutique: number): void {
