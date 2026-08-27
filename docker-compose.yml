@@ -25,6 +25,16 @@ services:
       # with "Directory not empty" on Docker Desktop's Windows file sharing.
       - backend_var_cache:/var/www/html/var/cache
       - backend_var_log:/var/www/html/var/log
+      # vendor/ (~7k PHP files) never needs live-editing, but with opcache's
+      # validate_timestamps on, every request stats every loaded file — over
+      # the Windows bind mount that made requests take 10-15s. Isolating it
+      # in a named volume keeps live-reload for src/ while removing vendor/
+      # from that slow path. Caveat: Docker only seeds a named volume from
+      # the image the first time it's created — after a composer.lock
+      # change, run `docker compose exec php composer install` (or remove
+      # the volume with `docker volume rm stockpilotn_backend_vendor`) to
+      # refresh it.
+      - backend_vendor:/var/www/html/vendor
     environment:
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-dev-secret-change-me}
@@ -56,3 +66,4 @@ volumes:
   db_data:
   backend_var_cache:
   backend_var_log:
+  backend_vendor:
