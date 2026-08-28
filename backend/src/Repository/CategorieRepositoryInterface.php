@@ -12,10 +12,5 @@ interface CategorieRepositoryInterface
 
     public function find(int $id): ?Categorie;
 
-    /**
-     * @return Categorie[]
-     */
-    public function findAll(): array;
-
     public function save(Categorie $categorie): void;
 }

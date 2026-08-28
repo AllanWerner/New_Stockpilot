@@ -31,16 +31,9 @@ final class CreateProduitRequestDto
 
     /**
      * Optional: if provided, a Stock row is created/updated for this boutique
-     * with the given threshold (StockService::definirSeuil). Ignored when
-     * toutesBoutiques is true.
+     * with the given threshold (StockService::definirSeuil).
      */
     public ?int $idBoutique = null;
-
-    /**
-     * Gérant-only: assign this product's stock to every boutique at once
-     * (each starting at quantiteActuelle = 0), instead of a single one.
-     */
-    public bool $toutesBoutiques = false;
 
     #[Assert\PositiveOrZero]
     public int $seuilReappro = 0;

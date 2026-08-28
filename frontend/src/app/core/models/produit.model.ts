@@ -3,10 +3,6 @@ export interface Categorie {
   nom: string;
 }
 
-export interface CreateCategoriePayload {
-  nom: string;
-}
-
 export interface StockInfo {
   quantiteActuelle: number;
   seuilReappro: number;
@@ -50,7 +46,6 @@ export interface CreateProduitPayload {
   unite: string;
   idCategorie: number;
   idBoutique?: number;
-  toutesBoutiques?: boolean;
   seuilReappro?: number;
   quantiteCommandeReco?: number;
 }

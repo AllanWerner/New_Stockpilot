@@ -14,7 +14,6 @@ use App\Repository\BoutiqueRepositoryInterface;
 use App\Repository\CommandeRepositoryInterface;
 use App\Repository\FournisseurRepositoryInterface;
 use App\Repository\ProduitRepositoryInterface;
-use App\Security\AccessVoter;
 use App\Security\BoutiqueVoter;
 use App\Service\CommandeService;
 use App\Service\StockService;
@@ -23,6 +22,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -35,7 +35,6 @@ final class CommandeController extends AbstractController
         private readonly BoutiqueRepositoryInterface $boutiqueRepository,
         private readonly FournisseurRepositoryInterface $fournisseurRepository,
         private readonly ProduitRepositoryInterface $produitRepository,
-        private readonly AccessVoter $accessVoter,
     ) {
     }
 
@@ -61,32 +60,22 @@ final class CommandeController extends AbstractController
         ], $stocks));
     }
 
-    /**
-     * idBoutique is optional: when provided, scopes to that single boutique
-     * (as before); when absent, returns the consolidated "Toutes boutiques"
-     * view — every boutique for a gérant, or just the employee's own
-     * affected boutiques otherwise (same perimeter pattern as
-     * DashboardService::perimetreBoutiques).
-     */
     #[Route('/api/commandes', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
         $idBoutique = $request->query->get('idBoutique');
 
-        if (null !== $idBoutique) {
-            $boutique = $this->trouverBoutique((int) $idBoutique);
-            $this->denyAccessUnlessGranted(BoutiqueVoter::ACCESS, $boutique);
-            $commandes = $this->commandeRepository->findByBoutique($boutique);
-        } else {
-            /** @var Employe $employe */
-            $employe = $this->getUser();
-            $boutiques = $this->accessVoter->estGerant($employe)
-                ? $this->boutiqueRepository->findAll()
-                : $this->boutiqueRepository->findByEmploye($employe);
-            $commandes = $this->commandeRepository->findByBoutiques($boutiques);
+        if (null === $idBoutique) {
+            throw new BadRequestHttpException('Le paramètre idBoutique est requis.');
         }
 
-        return $this->json(array_map(fn (Commande $c) => $this->commandeVersResume($c), $commandes));
+        $boutique = $this->trouverBoutique((int) $idBoutique);
+        $this->denyAccessUnlessGranted(BoutiqueVoter::ACCESS, $boutique);
+
+        return $this->json(array_map(
+            fn (Commande $c) => $this->commandeVersResume($c),
+            $this->commandeRepository->findByBoutique($boutique),
+        ));
     }
 
     #[Route('/api/commandes/{id}', methods: ['GET'])]

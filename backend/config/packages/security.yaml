@@ -21,7 +21,6 @@ security:
             pattern: ^/api
             stateless: true
             provider: employes
-            user_checker: App\Security\EmployeUserChecker
             jwt: ~
 
     access_control:
