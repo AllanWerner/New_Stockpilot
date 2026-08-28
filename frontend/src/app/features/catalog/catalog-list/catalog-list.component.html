@@ -15,13 +15,50 @@
     </div>
   </div>
 
-  <mat-form-field appearance="outline" class="sp-catalog__search">
-    <mat-label>Rechercher un produit</mat-label>
-    <input matInput [(ngModel)]="searchTerm" (keyup.enter)="reload()" />
-    <button matSuffix mat-icon-button (click)="reload()">
-      <mat-icon>search</mat-icon>
-    </button>
-  </mat-form-field>
+  <div class="sp-catalog__filters">
+    <mat-form-field appearance="outline" class="sp-catalog__search">
+      <mat-label>Rechercher un produit</mat-label>
+      <input matInput [(ngModel)]="searchTerm" (keyup.enter)="reload()" />
+      <button matSuffix mat-icon-button (click)="reload()">
+        <mat-icon>search</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="sp-catalog__filter">
+      <mat-label>Catégorie</mat-label>
+      <mat-select [value]="filterIdCategorie()" (selectionChange)="filterIdCategorie.set($event.value); reload()">
+        <mat-option [value]="null">Toutes</mat-option>
+        @for (categorie of categories(); track categorie.idCategorie) {
+          <mat-option [value]="categorie.idCategorie">{{ categorie.nom }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="sp-catalog__filter">
+      <mat-label>Fournisseur</mat-label>
+      <mat-select
+        [value]="filterIdFournisseur()"
+        (selectionChange)="filterIdFournisseur.set($event.value); reload()"
+      >
+        <mat-option [value]="null">Tous</mat-option>
+        @for (fournisseur of fournisseurs(); track fournisseur.idFournisseur) {
+          <mat-option [value]="fournisseur.idFournisseur">{{ fournisseur.nom }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (selectedBoutique()) {
+      <mat-form-field appearance="outline" class="sp-catalog__filter">
+        <mat-label>Statut</mat-label>
+        <mat-select [value]="filterStatut()" (selectionChange)="filterStatut.set($event.value); reload()">
+          <mat-option [value]="null">Tous</mat-option>
+          <mat-option value="rupture">rupture</mat-option>
+          <mat-option value="critique">critique</mat-option>
+          <mat-option value="ok">ok</mat-option>
+        </mat-select>
+      </mat-form-field>
+    }
+  </div>
 
   @if (!selectedBoutique()) {
     <p class="sp-catalog__hint">
@@ -58,7 +95,14 @@
 
       <ng-container matColumnDef="prixAchat">
         <th mat-header-cell *matHeaderCellDef>Prix d'achat</th>
-        <td mat-cell *matCellDef="let p" class="sp-mono">{{ p.prixAchat }} €</td>
+        <td mat-cell *matCellDef="let p" class="sp-mono">
+          {{ p.prixAchat }} €
+          @if (isGerant() && !selectedBoutique()) {
+            <button mat-icon-button (click)="openPrixDialog(p)" matTooltip="Modifier le prix">
+              <mat-icon>edit</mat-icon>
+            </button>
+          }
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="stock">
