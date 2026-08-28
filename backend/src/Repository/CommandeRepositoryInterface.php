@@ -18,6 +18,13 @@ interface CommandeRepositoryInterface
 
     /**
      * @param Boutique[] $boutiques
+     *
+     * @return Commande[]
+     */
+    public function findByBoutiques(array $boutiques): array;
+
+    /**
+     * @param Boutique[] $boutiques
      */
     public function countEnCoursPourBoutiques(array $boutiques): int;
 

@@ -196,13 +196,96 @@ final class CommandeControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(422);
     }
 
-    public function testListeSansIdBoutiqueRenvoie400(): void
+    public function testListeSansIdBoutiqueRenvoieLesCommandesDeToutesLesBoutiquesAccessibles(): void
     {
         $client = static::createClient();
-        $s = $this->scenario($client, 'gerant.liste-sans-boutique@stockpilot.test');
+        $s = $this->scenario($client, 'gerant.liste-toutes-boutiques@stockpilot.test');
+
+        $container = static::getContainer();
+        $em = $container->get(EntityManagerInterface::class);
+        $boutique2 = new Boutique('Rive Gauche', '2 rue Test', 'Lyon');
+        $em->persist($boutique2);
+        $em->flush();
+
+        $client->request('POST', '/api/commandes', server: [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$s['token'],
+        ], content: json_encode([
+            'idBoutique' => $s['idBoutique'],
+            'idFournisseur' => $s['idFournisseur'],
+            'lignes' => [
+                ['idProduit' => $s['idProduit'], 'quantiteCommandee' => 3, 'prixUnitaire' => '1.20'],
+            ],
+        ]));
+        self::assertResponseStatusCodeSame(201);
+
+        $client->request('POST', '/api/commandes', server: [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$s['token'],
+        ], content: json_encode([
+            'idBoutique' => $boutique2->getId(),
+            'idFournisseur' => $s['idFournisseur'],
+            'lignes' => [
+                ['idProduit' => $s['idProduit'], 'quantiteCommandee' => 5, 'prixUnitaire' => '1.20'],
+            ],
+        ]));
+        self::assertResponseStatusCodeSame(201);
 
         $client->request('GET', '/api/commandes', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
 
-        self::assertResponseStatusCodeSame(400);
+        self::assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertCount(2, $data);
+
+        $boutiqueIds = array_map(static fn (array $c) => $c['boutique']['idBoutique'], $data);
+        sort($boutiqueIds);
+        $expected = [$s['idBoutique'], $boutique2->getId()];
+        sort($expected);
+        self::assertSame($expected, $boutiqueIds);
+    }
+
+    public function testListeAvecIdBoutiqueResteScopeeAUneSeuleBoutique(): void
+    {
+        $client = static::createClient();
+        $s = $this->scenario($client, 'gerant.liste-une-boutique@stockpilot.test');
+
+        $container = static::getContainer();
+        $em = $container->get(EntityManagerInterface::class);
+        $boutique2 = new Boutique('Rive Gauche', '2 rue Test', 'Lyon');
+        $em->persist($boutique2);
+        $em->flush();
+
+        $client->request('POST', '/api/commandes', server: [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$s['token'],
+        ], content: json_encode([
+            'idBoutique' => $s['idBoutique'],
+            'idFournisseur' => $s['idFournisseur'],
+            'lignes' => [
+                ['idProduit' => $s['idProduit'], 'quantiteCommandee' => 3, 'prixUnitaire' => '1.20'],
+            ],
+        ]));
+        self::assertResponseStatusCodeSame(201);
+
+        $client->request('POST', '/api/commandes', server: [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$s['token'],
+        ], content: json_encode([
+            'idBoutique' => $boutique2->getId(),
+            'idFournisseur' => $s['idFournisseur'],
+            'lignes' => [
+                ['idProduit' => $s['idProduit'], 'quantiteCommandee' => 5, 'prixUnitaire' => '1.20'],
+            ],
+        ]));
+        self::assertResponseStatusCodeSame(201);
+
+        $client->request('GET', '/api/commandes?idBoutique='.$s['idBoutique'], server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$s['token'],
+        ]);
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertCount(1, $data);
+        self::assertSame($s['idBoutique'], $data[0]['boutique']['idBoutique']);
     }
 }

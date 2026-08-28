@@ -7,14 +7,30 @@
     </button>
   </div>
 
-  @if (!selectedBoutique()) {
-    <p class="sp-commandes__hint">Sélectionnez une boutique dans l'en-tête pour voir ses commandes.</p>
-  } @else if (loading()) {
+  <p class="sp-commandes__subtitle">
+    @if (selectedBoutique(); as boutique) {
+      Boutique — {{ boutique.nom }}
+    } @else {
+      Vue consolidée — {{ boutiques().length }} boutique(s)
+    }
+  </p>
+
+  <mat-form-field appearance="outline" class="sp-commandes__filter">
+    <mat-label>Fournisseur</mat-label>
+    <mat-select [value]="filterIdFournisseur()" (selectionChange)="filterIdFournisseur.set($event.value)">
+      <mat-option [value]="null">Tous</mat-option>
+      @for (fournisseur of fournisseurs(); track fournisseur.idFournisseur) {
+        <mat-option [value]="fournisseur.idFournisseur">{{ fournisseur.nom }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  @if (loading()) {
     <div class="sp-commandes__loading">
       <mat-spinner diameter="32"></mat-spinner>
     </div>
   } @else {
-    <table mat-table [dataSource]="commandes()" class="sp-commandes__table">
+    <table mat-table [dataSource]="commandesAffichees()" class="sp-commandes__table">
       <ng-container matColumnDef="idCommande">
         <th mat-header-cell *matHeaderCellDef>N°</th>
         <td mat-cell *matCellDef="let c" class="sp-mono">#{{ c.idCommande }}</td>
@@ -23,6 +39,11 @@
       <ng-container matColumnDef="fournisseur">
         <th mat-header-cell *matHeaderCellDef>Fournisseur</th>
         <td mat-cell *matCellDef="let c">{{ c.fournisseur.nom }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="boutique">
+        <th mat-header-cell *matHeaderCellDef>Boutique</th>
+        <td mat-cell *matCellDef="let c">{{ c.boutique.nom }}</td>
       </ng-container>
 
       <ng-container matColumnDef="dateCreation">
@@ -44,12 +65,12 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="ouvrir(row.idCommande)"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns()" (click)="ouvrir(row.idCommande)"></tr>
     </table>
 
-    @if (commandes().length === 0) {
-      <p class="sp-commandes__empty">Aucune commande pour cette boutique.</p>
+    @if (commandesAffichees().length === 0) {
+      <p class="sp-commandes__empty">Aucune commande.</p>
     }
   }
 </div>
