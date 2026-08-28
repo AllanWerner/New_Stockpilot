@@ -4,15 +4,27 @@
     <button mat-stroked-button (click)="toutMarquerLu()">Tout marquer comme lu</button>
   </div>
 
+  <div class="sp-notifications__filters">
+    <mat-form-field appearance="outline" class="sp-notifications__filter">
+      <mat-label>Du</mat-label>
+      <input matInput type="date" [(ngModel)]="filterDateDebut" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="sp-notifications__filter">
+      <mat-label>Au</mat-label>
+      <input matInput type="date" [(ngModel)]="filterDateFin" />
+    </mat-form-field>
+  </div>
+
   @if (loading()) {
     <div class="sp-notifications__loading">
       <mat-spinner diameter="32"></mat-spinner>
     </div>
-  } @else if (notifications().length === 0) {
+  } @else if (notificationsAffichees().length === 0) {
     <p class="sp-notifications__empty">Aucune notification pour le moment.</p>
   } @else {
     <ul class="sp-notifications__list">
-      @for (notification of notifications(); track notification.idNotification) {
+      @for (notification of notificationsAffichees(); track notification.idNotification) {
         <li
           class="sp-notification"
           [class.sp-notification--non-lue]="!notification.lu"
@@ -26,6 +38,13 @@
             <p class="sp-notification__message">{{ notification.message }}</p>
             <p class="sp-notification__date">{{ notification.dateCreation | date: 'dd/MM/yyyy HH:mm' }}</p>
           </div>
+          <button
+            mat-icon-button
+            [matTooltip]="notification.lu ? 'Marquer comme non lu' : 'Marquer comme lu'"
+            (click)="basculerLue(notification, $event)"
+          >
+            <mat-icon>{{ notification.lu ? 'mark_email_unread' : 'mark_email_read' }}</mat-icon>
+          </button>
           @if (!notification.lu) {
             <span class="sp-notification__dot"></span>
           }
