@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>Nouvelle catégorie</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="sp-form">
+    <mat-form-field appearance="outline" class="sp-form__field">
+      <mat-label>Nom</mat-label>
+      <input matInput formControlName="nom" />
+    </mat-form-field>
+
+    @if (errorMessage(); as message) {
+      <p class="sp-form__error">{{ message }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="loading()">Annuler</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="loading()">
+      @if (loading()) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        Créer
+      }
+    </button>
+  </mat-dialog-actions>
+</form>

@@ -12,9 +12,15 @@
   }
 }
 
-.sp-commandes__hint {
+.sp-commandes__subtitle {
   color: t.$sp-text-secondary;
-  font-size: 13px;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.sp-commandes__filter {
+  width: 220px;
+  margin-bottom: 12px;
 }
 
 .sp-commandes__table {

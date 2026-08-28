@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Dto\Request\UpdateCompteRequestDto;
 use App\Dto\Response\TokenDto;
 use App\Entity\Employe;
 use App\Repository\EmployeRepositoryInterface;
 use App\Security\Exception\InvalidCredentialsException;
 use App\Security\Exception\TooManyLoginAttemptsException;
+use App\Service\Exception\EmployeDejaExistantException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -47,11 +49,34 @@ final class AuthService
         );
     }
 
+    public function modifierCompte(Employe $employe, UpdateCompteRequestDto $dto): void
+    {
+        if (!$this->passwordHasher->isPasswordValid($employe, $dto->motDePasseActuel)) {
+            throw new InvalidCredentialsException();
+        }
+
+        if (null !== $dto->email && $dto->email !== $employe->getEmail()) {
+            $existant = $this->employeRepository->findByEmail($dto->email);
+
+            if (null !== $existant && $existant->getId() !== $employe->getId()) {
+                throw new EmployeDejaExistantException();
+            }
+
+            $employe->setEmail($dto->email);
+        }
+
+        if (null !== $dto->nouveauMotDePasse) {
+            $employe->setMotDePasse($this->passwordHasher->hashPassword($employe, $dto->nouveauMotDePasse));
+        }
+
+        $this->employeRepository->save($employe);
+    }
+
     private function verifierIdentifiants(string $email, string $motDePasse): Employe
     {
         $employe = $this->employeRepository->findByEmail($email);
 
-        if (null === $employe || !$this->passwordHasher->isPasswordValid($employe, $motDePasse)) {
+        if (null === $employe || !$this->passwordHasher->isPasswordValid($employe, $motDePasse) || !$employe->isActif()) {
             throw new InvalidCredentialsException();
         }
 

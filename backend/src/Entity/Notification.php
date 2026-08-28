@@ -66,6 +66,11 @@ class Notification
         $this->lu = true;
     }
 
+    public function marquerNonLue(): void
+    {
+        $this->lu = false;
+    }
+
     public function getDateCreation(): \DateTimeImmutable
     {
         return $this->dateCreation;

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { gerantGuard } from './core/auth/gerant.guard';
 
 export const routes: Routes = [
   {
@@ -45,6 +46,24 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/notifications/notification-list/notification-list.component').then(
             (m) => m.NotificationListComponent,
+          ),
+      },
+      {
+        path: 'organisation',
+        canActivate: [gerantGuard],
+        loadComponent: () =>
+          import('./features/organisation/organisation.component').then((m) => m.OrganisationComponent),
+      },
+      {
+        path: 'compte',
+        loadComponent: () => import('./features/compte/compte.component').then((m) => m.CompteComponent),
+      },
+      {
+        path: 'mouvements',
+        canActivate: [gerantGuard],
+        loadComponent: () =>
+          import('./features/mouvement-historique/mouvement-historique.component').then(
+            (m) => m.MouvementHistoriqueComponent,
           ),
       },
     ],

@@ -12,6 +12,16 @@
   }
 }
 
+.sp-notifications__filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sp-notifications__filter {
+  width: 160px;
+}
+
 .sp-notifications__loading {
   display: flex;
   justify-content: center;

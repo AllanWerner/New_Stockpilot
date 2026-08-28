@@ -25,4 +25,6 @@ interface BoutiqueRepositoryInterface
     public function find(int $id): ?Boutique;
 
     public function save(Boutique $boutique): void;
+
+    public function delete(Boutique $boutique): void;
 }
