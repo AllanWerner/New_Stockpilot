@@ -46,11 +46,4 @@ final class BoutiqueRepository extends ServiceEntityRepository implements Boutiq
         $em->persist($boutique);
         $em->flush();
     }
-
-    public function delete(Boutique $boutique): void
-    {
-        $em = $this->getEntityManager();
-        $em->remove($boutique);
-        $em->flush();
-    }
 }

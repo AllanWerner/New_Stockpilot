@@ -38,8 +38,4 @@ export class CatalogService {
   ajuster(idProduit: number, payload: AjustementStockPayload): Observable<Produit> {
     return this.http.post<Produit>(`${environment.apiUrl}/produits/${idProduit}/ajustement`, payload);
   }
-
-  modifierPrix(idProduit: number, payload: { prixAchat: string }): Observable<Produit> {
-    return this.http.post<Produit>(`${environment.apiUrl}/produits/${idProduit}/prix`, payload);
-  }
 }

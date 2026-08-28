@@ -71,15 +71,9 @@ final class NotificationControllerTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         $notifications = json_decode($client->getResponse()->getContent(), true);
-        // Crossing the threshold creates a SEUIL_CRITIQUE alert, and every
-        // adjustment (regardless of threshold) creates its own
-        // AJUSTEMENT_STOCK record — both land here.
-        self::assertCount(2, $notifications);
-        $types = array_column($notifications, 'type');
-        sort($types);
-        self::assertSame(['AJUSTEMENT_STOCK', 'SEUIL_CRITIQUE'], $types);
+        self::assertCount(1, $notifications);
+        self::assertSame('SEUIL_CRITIQUE', $notifications[0]['type']);
         self::assertFalse($notifications[0]['lu']);
-        self::assertFalse($notifications[1]['lu']);
     }
 
     public function testMarquerLuePuisToutMarquerLu(): void
@@ -92,11 +86,8 @@ final class NotificationControllerTest extends WebTestCase
             'HTTP_AUTHORIZATION' => 'Bearer '.$s['token'],
         ], content: json_encode(['idBoutique' => $s['idBoutique'], 'quantite' => -5]));
 
-        // This -5 adjustment crosses the threshold, so it produces two
-        // notifications (SEUIL_CRITIQUE + AJUSTEMENT_STOCK) — see
-        // testAjustementFranchissantLeSeuilCreeUneNotification.
         $client->request('GET', '/api/notifications/non-lues/compte', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
-        self::assertSame(2, json_decode($client->getResponse()->getContent(), true)['compte']);
+        self::assertSame(1, json_decode($client->getResponse()->getContent(), true)['compte']);
 
         $client->request('GET', '/api/notifications', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
         $idNotification = json_decode($client->getResponse()->getContent(), true)[0]['idNotification'];
@@ -106,10 +97,10 @@ final class NotificationControllerTest extends WebTestCase
         self::assertTrue(json_decode($client->getResponse()->getContent(), true)['lu']);
 
         $client->request('GET', '/api/notifications/non-lues/compte', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
-        self::assertSame(1, json_decode($client->getResponse()->getContent(), true)['compte']);
+        self::assertSame(0, json_decode($client->getResponse()->getContent(), true)['compte']);
     }
 
-    public function testAjustementSansFranchirLeSeuilNeCreeQueLaNotificationAjustement(): void
+    public function testAjustementSansFranchirLeSeuilNeCreePasDeNotification(): void
     {
         $client = static::createClient();
         $s = $this->scenario($client, 'gerant.notif-sans-alerte@stockpilot.test');
@@ -122,11 +113,6 @@ final class NotificationControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
 
         $client->request('GET', '/api/notifications', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
-        $notifications = json_decode($client->getResponse()->getContent(), true);
-        // Every adjustment creates its own AJUSTEMENT_STOCK notification,
-        // but staying above the threshold (6 - 1 = 5 > 3) means no
-        // SEUIL_CRITIQUE alert on top of it.
-        self::assertCount(1, $notifications);
-        self::assertSame('AJUSTEMENT_STOCK', $notifications[0]['type']);
+        self::assertCount(0, json_decode($client->getResponse()->getContent(), true));
     }
 }

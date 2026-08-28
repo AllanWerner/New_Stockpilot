@@ -26,14 +26,10 @@ export class BoutiqueContextService {
   charger() {
     return this.http.get<Boutique[]>(`${environment.apiUrl}/boutiques`).pipe(
       tap((boutiques) => {
-        // The API also returns inactive boutiques (the org-management page
-        // needs those to reactivate them) — the selector only ever offers
-        // active ones.
-        const actives = boutiques.filter((b) => b.actif);
-        this.boutiquesSignal.set(actives);
+        this.boutiquesSignal.set(boutiques);
 
-        if (actives.length === 1) {
-          this.selectedIdSignal.set(actives[0].idBoutique);
+        if (boutiques.length === 1) {
+          this.selectedIdSignal.set(boutiques[0].idBoutique);
         }
       }),
     );

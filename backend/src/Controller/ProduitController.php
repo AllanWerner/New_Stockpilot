@@ -6,7 +6,6 @@ namespace App\Controller;
 
 use App\Dto\Request\AjustementStockRequestDto;
 use App\Dto\Request\CreateProduitRequestDto;
-use App\Dto\Request\ModifierPrixRequestDto;
 use App\Dto\Request\ProduitListRequestDto;
 use App\Dto\Request\ScanProduitRequestDto;
 use App\Entity\Boutique;
@@ -17,7 +16,6 @@ use App\Repository\BoutiqueRepositoryInterface;
 use App\Repository\ProduitRepositoryInterface;
 use App\Repository\StockRepositoryInterface;
 use App\Security\BoutiqueVoter;
-use App\Service\NotificationService;
 use App\Service\ProduitService;
 use App\Service\StockService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +24,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/produits')]
 final class ProduitController extends AbstractController
@@ -37,7 +34,6 @@ final class ProduitController extends AbstractController
         private readonly BoutiqueRepositoryInterface $boutiqueRepository,
         private readonly StockRepositoryInterface $stockRepository,
         private readonly ProduitRepositoryInterface $produitRepository,
-        private readonly NotificationService $notificationService,
     ) {
     }
 
@@ -62,25 +58,10 @@ final class ProduitController extends AbstractController
     #[Route('', methods: ['POST'])]
     public function create(#[MapRequestPayload] CreateProduitRequestDto $dto): JsonResponse
     {
-        if ($dto->toutesBoutiques) {
-            // Assigning stock everywhere at once is a gérant-only move — a
-            // RESPONSABLE only has MANAGE rights on their own boutique(s),
-            // never every boutique in the system.
-            $this->denyAccessUnlessGranted('ROLE_GERANT');
-
-            $produit = $this->produitService->creerManuel($dto);
-
-            foreach ($this->boutiqueRepository->findAll() as $boutique) {
-                $this->stockService->definirSeuil($produit, $boutique, $dto->seuilReappro, $dto->quantiteCommandeReco);
-            }
-
-            return $this->json($this->produitVersReponse($produit, null), 201);
-        }
-
         $boutique = null !== $dto->idBoutique ? $this->trouverBoutique($dto->idBoutique) : null;
 
         if (null !== $boutique) {
-            $this->denyAccessUnlessGranted(BoutiqueVoter::MANAGE, $boutique);
+            $this->denyAccessUnlessGranted(BoutiqueVoter::ACCESS, $boutique);
         }
 
         $produit = $this->produitService->creerManuel($dto);
@@ -126,7 +107,7 @@ final class ProduitController extends AbstractController
         }
 
         $boutique = $this->trouverBoutique($dto->idBoutique);
-        $this->denyAccessUnlessGranted(BoutiqueVoter::MANAGE, $boutique);
+        $this->denyAccessUnlessGranted(BoutiqueVoter::ACCESS, $boutique);
 
         /** @var Employe $employe */
         $employe = $this->getUser();
@@ -137,37 +118,7 @@ final class ProduitController extends AbstractController
             $this->stockService->decrementerStock($produit, $boutique, abs($dto->quantite), TypeMouvement::AJUSTEMENT, $employe);
         }
 
-        $stock = $this->stockRepository->findOneByProduitAndBoutique($produit, $boutique);
-
-        if (null !== $stock) {
-            $this->notificationService->notifierAjustement($stock, $dto->quantite, $employe);
-        }
-
         return $this->json($this->produitVersReponse($produit, $dto->idBoutique));
-    }
-
-    /**
-     * Prix d'achat (CDCF F2) — a product's price is a single value shared
-     * across every boutique (no per-boutique price row exists in the schema),
-     * so there's nothing boutique-scoped to check here beyond the gérant
-     * role: the frontend only shows this action in the consolidated "Toutes
-     * boutiques" view to avoid implying a per-boutique price that doesn't
-     * exist.
-     */
-    #[Route('/{id}/prix', methods: ['POST'])]
-    #[IsGranted('ROLE_GERANT')]
-    public function modifierPrix(int $id, #[MapRequestPayload] ModifierPrixRequestDto $dto): JsonResponse
-    {
-        $produit = $this->produitRepository->find($id);
-
-        if (null === $produit) {
-            throw new NotFoundHttpException('Produit introuvable.');
-        }
-
-        $produit->setPrixAchat($dto->prixAchat);
-        $this->produitRepository->save($produit);
-
-        return $this->json($this->produitVersReponse($produit, null));
     }
 
     private function trouverBoutique(int $id): Boutique

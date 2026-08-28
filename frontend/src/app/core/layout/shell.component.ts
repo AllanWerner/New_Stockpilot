@@ -31,7 +31,6 @@ export class ShellComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
 
   readonly currentUser = this.authService.currentUser;
-  readonly isVendeurSeul = this.authService.isVendeurSeul;
   readonly boutiques = this.boutiqueContext.boutiques;
   readonly selectedBoutique = this.boutiqueContext.selectedBoutique;
   readonly compteNotificationsNonLues = this.notificationService.compteNonLues;

@@ -17,20 +17,9 @@
   gap: 8px;
 }
 
-.sp-catalog__filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-start;
-}
-
 .sp-catalog__search {
   width: 100%;
   max-width: 400px;
-}
-
-.sp-catalog__filter {
-  width: 180px;
 }
 
 .sp-catalog__hint {

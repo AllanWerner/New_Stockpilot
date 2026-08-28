@@ -53,14 +53,6 @@ export class NotificationListComponent implements OnInit {
   }
 
   iconePour(type: string): string {
-    if (type === 'SEUIL_CRITIQUE') {
-      return 'warning';
-    }
-
-    if (type === 'AJUSTEMENT_STOCK') {
-      return 'tune';
-    }
-
-    return 'local_shipping';
+    return type === 'SEUIL_CRITIQUE' ? 'warning' : 'local_shipping';
   }
 }

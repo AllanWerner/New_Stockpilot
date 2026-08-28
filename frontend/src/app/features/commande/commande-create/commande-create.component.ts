@@ -168,21 +168,8 @@ export class CommandeCreateComponent implements OnInit {
       if (fournisseur) {
         this.fournisseurs.update((liste) => [...liste, fournisseur]);
         this.form.patchValue({ idFournisseur: fournisseur.idFournisseur });
-        this.appliquerDelaiLivraison(fournisseur.idFournisseur);
       }
     });
-  }
-
-  appliquerDelaiLivraison(idFournisseur: number | null): void {
-    const fournisseur = this.fournisseurs().find((f) => f.idFournisseur === idFournisseur);
-
-    if (fournisseur?.delaiLivraisonJours == null) {
-      return;
-    }
-
-    const date = new Date();
-    date.setDate(date.getDate() + fournisseur.delaiLivraisonJours);
-    this.form.patchValue({ datePrevue: date.toISOString().slice(0, 10) });
   }
 
   submit(): void {

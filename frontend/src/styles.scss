@@ -59,10 +59,4 @@ code,
     border-color: t.$sp-status-ok;
     background-color: color-mix(in srgb, t.$sp-status-ok 12%, white);
   }
-
-  &--neutral {
-    color: t.$sp-text-secondary;
-    border-color: t.$sp-text-secondary;
-    background-color: color-mix(in srgb, t.$sp-text-secondary 12%, white);
-  }
 }
