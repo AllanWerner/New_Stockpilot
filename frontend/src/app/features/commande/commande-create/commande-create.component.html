@@ -5,7 +5,7 @@
     <div class="sp-commande-create__header">
       <mat-form-field appearance="outline" class="sp-commande-create__field">
         <mat-label>Fournisseur</mat-label>
-        <mat-select formControlName="idFournisseur">
+        <mat-select formControlName="idFournisseur" (selectionChange)="appliquerDelaiLivraison($event.value)">
           @for (fournisseur of fournisseurs(); track fournisseur.idFournisseur) {
             <mat-option [value]="fournisseur.idFournisseur">{{ fournisseur.nom }}</mat-option>
           }
@@ -20,6 +20,7 @@
       <mat-form-field appearance="outline" class="sp-commande-create__field">
         <mat-label>Date de livraison prévue</mat-label>
         <input matInput type="date" formControlName="datePrevue" />
+        <mat-hint>Estimée à partir du délai du fournisseur — modifiable.</mat-hint>
       </mat-form-field>
     </div>
 

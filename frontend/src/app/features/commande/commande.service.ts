@@ -18,8 +18,12 @@ export class CommandeService {
     return this.http.get<ProduitSousSeuil[]>(`${environment.apiUrl}/boutiques/${idBoutique}/produits-sous-seuil`);
   }
 
-  list(idBoutique: number): Observable<CommandeResume[]> {
-    const params = new HttpParams().set('idBoutique', String(idBoutique));
+  list(idBoutique?: number): Observable<CommandeResume[]> {
+    let params = new HttpParams();
+
+    if (idBoutique !== undefined) {
+      params = params.set('idBoutique', String(idBoutique));
+    }
 
     return this.http.get<CommandeResume[]>(`${environment.apiUrl}/commandes`, { params });
   }
