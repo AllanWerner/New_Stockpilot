@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { commandeStatutClasse, commandeStatutLabel } from '../../../core/models/commande-statut.util';
 import { Commande, StatutCommande } from '../../../core/models/commande.model';
 import { CommandeService } from '../commande.service';
 
@@ -63,25 +64,11 @@ export class CommandeDetailComponent implements OnInit {
   }
 
   statutClasse(statut: StatutCommande): string {
-    return (
-      {
-        BROUILLON: 'sp-status-badge--critique',
-        ENVOYEE: 'sp-status-badge--critique',
-        RECUE_PARTIELLE: 'sp-status-badge--critique',
-        RECUE: 'sp-status-badge--ok',
-      } satisfies Record<StatutCommande, string>
-    )[statut];
+    return commandeStatutClasse(statut);
   }
 
   statutLabel(statut: StatutCommande): string {
-    return (
-      {
-        BROUILLON: 'brouillon',
-        ENVOYEE: 'envoyée',
-        RECUE_PARTIELLE: 'reçue partiellement',
-        RECUE: 'reçue',
-      } satisfies Record<StatutCommande, string>
-    )[statut];
+    return commandeStatutLabel(statut);
   }
 
   enregistrerReception(): void {
