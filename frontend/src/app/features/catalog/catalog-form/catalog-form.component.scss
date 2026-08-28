@@ -10,6 +10,16 @@
   width: 100%;
 }
 
+.sp-form__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  .sp-form__field {
+    flex: 1;
+  }
+}
+
 .sp-form__error {
   color: t.$sp-status-rupture;
   font-size: 13px;

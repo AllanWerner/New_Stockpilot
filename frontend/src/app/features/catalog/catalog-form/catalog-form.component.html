@@ -18,22 +18,52 @@
       <input matInput formControlName="unite" />
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="sp-form__field">
-      <mat-label>ID Catégorie</mat-label>
-      <input matInput type="number" formControlName="idCategorie" />
-      <mat-hint>Identifiant d'une catégorie existante.</mat-hint>
-    </mat-form-field>
+    <div class="sp-form__row">
+      <mat-form-field appearance="outline" class="sp-form__field">
+        <mat-label>Catégorie</mat-label>
+        <mat-select formControlName="idCategorie">
+          @for (categorie of categories(); track categorie.idCategorie) {
+            <mat-option [value]="categorie.idCategorie">{{ categorie.nom }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (isGerant()) {
+        <button mat-stroked-button type="button" (click)="ouvrirNouvelleCategorie()">
+          <mat-icon>add</mat-icon>
+        </button>
+      }
+    </div>
 
     <mat-form-field appearance="outline" class="sp-form__field">
       <mat-label>Code-barres (optionnel)</mat-label>
       <input matInput formControlName="codeBarre" />
     </mat-form-field>
 
-    @if (idBoutique) {
+    @if (isGerant()) {
+      <mat-form-field appearance="outline" class="sp-form__field">
+        <mat-label>Assigner à</mat-label>
+        <mat-select [value]="modeAssignation()" (selectionChange)="modeAssignation.set($event.value)">
+          <mat-option value="aucune">Aucune boutique (catalogue uniquement)</mat-option>
+          @if (idBoutique) {
+            <mat-option value="boutique">Boutique active uniquement</mat-option>
+          }
+          <mat-option value="toutes">Toutes les boutiques</mat-option>
+        </mat-select>
+      </mat-form-field>
+    }
+
+    @if (modeAssignation() !== 'aucune') {
       <mat-form-field appearance="outline" class="sp-form__field">
         <mat-label>Seuil de réapprovisionnement</mat-label>
         <input matInput type="number" formControlName="seuilReappro" />
-        <mat-hint>Pour la boutique active — déclenche l'alerte de rupture.</mat-hint>
+        <mat-hint>
+          @if (modeAssignation() === 'toutes') {
+            Appliqué à chaque boutique — stock initial à 0 partout.
+          } @else {
+            Pour la boutique active — déclenche l'alerte de rupture.
+          }
+        </mat-hint>
       </mat-form-field>
     }
 
