@@ -1,6 +1,6 @@
 export interface Mouvement {
   idMouvement: number;
-  type: 'RECEPTION' | 'TRANSFERT';
+  type: 'RECEPTION' | 'TRANSFERT' | 'AJUSTEMENT';
   quantite: number;
   dateMouvement: string;
   produit: { idProduit: number; nom: string };

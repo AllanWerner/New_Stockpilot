@@ -59,10 +59,26 @@ export class MouvementHistoriqueComponent implements OnInit {
   }
 
   typeIcone(type: Mouvement['type']): string {
-    return type === 'RECEPTION' ? 'move_to_inbox' : 'swap_horiz';
+    if (type === 'RECEPTION') {
+      return 'move_to_inbox';
+    }
+
+    if (type === 'TRANSFERT') {
+      return 'swap_horiz';
+    }
+
+    return 'tune';
   }
 
   typeLabel(type: Mouvement['type']): string {
-    return type === 'RECEPTION' ? 'Réception' : 'Transfert';
+    if (type === 'RECEPTION') {
+      return 'Réception';
+    }
+
+    if (type === 'TRANSFERT') {
+      return 'Transfert';
+    }
+
+    return 'Ajustement';
   }
 }

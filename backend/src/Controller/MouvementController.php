@@ -16,16 +16,20 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Historique des mouvements (F2, "Manager Only") — surfaces only RECEPTION
- * and TRANSFERT movements, matching the CDCF's "réceptions et transferts"
- * framing. VENTE is out of scope (see ProduitController::ajuster()'s
- * comment) and AJUSTEMENT is a separate inventory-correction concern, not a
- * history item a gérant needs to audit here.
+ * Historique des mouvements (F2, "Manager Only") — surfaces RECEPTION,
+ * TRANSFERT and AJUSTEMENT movements, so a gérant can audit both supplier
+ * activity and manual inventory corrections in one place. VENTE stays out
+ * of scope (see ProduitController::ajuster()'s comment) since recording a
+ * checkout sale is explicitly out of the CDCF's perimeter.
  */
 #[Route('/api/mouvements')]
 final class MouvementController extends AbstractController
 {
-    private const array TYPES_HISTORIQUE = [TypeMouvement::RECEPTION, TypeMouvement::TRANSFERT];
+    private const array TYPES_HISTORIQUE = [
+        TypeMouvement::RECEPTION,
+        TypeMouvement::TRANSFERT,
+        TypeMouvement::AJUSTEMENT,
+    ];
 
     public function __construct(
         private readonly MouvementStockRepositoryInterface $mouvementStockRepository,
