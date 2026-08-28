@@ -129,4 +129,32 @@ final class NotificationControllerTest extends WebTestCase
         self::assertCount(1, $notifications);
         self::assertSame('AJUSTEMENT_STOCK', $notifications[0]['type']);
     }
+
+    public function testMarquerNonLueRemetLaNotificationEnNonLue(): void
+    {
+        $client = static::createClient();
+        $s = $this->scenario($client, 'gerant.notif-non-lue@stockpilot.test');
+
+        $client->request('POST', "/api/produits/{$s['idProduit']}/ajustement", server: [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$s['token'],
+        ], content: json_encode(['idBoutique' => $s['idBoutique'], 'quantite' => -1]));
+
+        $client->request('GET', '/api/notifications', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
+        $idNotification = json_decode($client->getResponse()->getContent(), true)[0]['idNotification'];
+
+        $client->request('POST', "/api/notifications/{$idNotification}/lue", server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
+        self::assertResponseIsSuccessful();
+        self::assertTrue(json_decode($client->getResponse()->getContent(), true)['lu']);
+
+        $client->request('GET', '/api/notifications/non-lues/compte', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
+        self::assertSame(0, json_decode($client->getResponse()->getContent(), true)['compte']);
+
+        $client->request('POST', "/api/notifications/{$idNotification}/non-lue", server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
+        self::assertResponseIsSuccessful();
+        self::assertFalse(json_decode($client->getResponse()->getContent(), true)['lu']);
+
+        $client->request('GET', '/api/notifications/non-lues/compte', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$s['token']]);
+        self::assertSame(1, json_decode($client->getResponse()->getContent(), true)['compte']);
+    }
 }
