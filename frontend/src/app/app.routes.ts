@@ -58,6 +58,14 @@ export const routes: Routes = [
         path: 'compte',
         loadComponent: () => import('./features/compte/compte.component').then((m) => m.CompteComponent),
       },
+      {
+        path: 'mouvements',
+        canActivate: [gerantGuard],
+        loadComponent: () =>
+          import('./features/mouvement-historique/mouvement-historique.component').then(
+            (m) => m.MouvementHistoriqueComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

@@ -41,4 +41,24 @@ final class MouvementStockRepository extends ServiceEntityRepository implements 
             ->getQuery()
             ->getResult();
     }
+
+    public function findParTypesPourBoutiques(array $boutiques, array $types): array
+    {
+        if ([] === $boutiques) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('m')
+            ->addSelect('p', 'b', 'e')
+            ->innerJoin('m.produit', 'p')
+            ->innerJoin('m.boutique', 'b')
+            ->innerJoin('m.employe', 'e')
+            ->andWhere('m.boutique IN (:boutiques)')
+            ->andWhere('m.type IN (:types)')
+            ->setParameter('boutiques', $boutiques)
+            ->setParameter('types', $types)
+            ->orderBy('m.dateMouvement', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

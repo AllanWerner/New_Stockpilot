@@ -65,6 +65,37 @@ final class NotificationService
         }
     }
 
+    /**
+     * Notifies every gérant, plus the employee who made the correction (if
+     * not already a gérant) — mirrors notifierReception()'s
+     * "gérants + acting employee, deduplicated" audience.
+     */
+    public function notifierAjustement(Stock $stock, int $quantite, Employe $employeAjustement): void
+    {
+        $message = sprintf(
+            'Ajustement de stock : "%s" (%s) — %s%d unité(s), nouveau stock : %d.',
+            $stock->getProduit()->getNom(),
+            $stock->getBoutique()->getNom(),
+            $quantite > 0 ? '+' : '',
+            $quantite,
+            $stock->getQuantiteActuelle(),
+        );
+
+        $destinataires = $this->employeRepository->findGerants();
+        $destinataires[] = $employeAjustement;
+
+        $dejaNotifies = [];
+
+        foreach ($destinataires as $employe) {
+            if (isset($dejaNotifies[$employe->getId()])) {
+                continue;
+            }
+
+            $dejaNotifies[$employe->getId()] = true;
+            $this->notificationRepository->save(new Notification('AJUSTEMENT_STOCK', $message, $employe));
+        }
+    }
+
     private function libelleStatut(StatutCommande $statut): string
     {
         return match ($statut) {
