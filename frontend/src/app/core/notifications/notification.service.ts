@@ -26,6 +26,12 @@ export class NotificationService {
     );
   }
 
+  marquerNonLue(idNotification: number): Observable<Notification> {
+    return this.http.post<Notification>(`${environment.apiUrl}/notifications/${idNotification}/non-lue`, {}).pipe(
+      tap(() => this.rafraichirCompte()),
+    );
+  }
+
   toutMarquerLu(): Observable<{ compte: number }> {
     return this.http.post<{ compte: number }>(`${environment.apiUrl}/notifications/tout-marquer-lu`, {}).pipe(
       tap((res) => this.compteNonLuesSignal.set(res.compte)),

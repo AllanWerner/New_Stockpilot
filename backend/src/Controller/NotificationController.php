@@ -53,6 +53,19 @@ final class NotificationController extends AbstractController
         return $this->json($this->notificationVersReponse($notification));
     }
 
+    #[Route('/{id}/non-lue', methods: ['POST'])]
+    public function marquerNonLue(int $id): JsonResponse
+    {
+        $notification = $this->trouverPourEmployeCourant($id);
+
+        if ($notification->isLu()) {
+            $notification->marquerNonLue();
+            $this->notificationRepository->save($notification);
+        }
+
+        return $this->json($this->notificationVersReponse($notification));
+    }
+
     #[Route('/tout-marquer-lu', methods: ['POST'])]
     public function toutMarquerLu(): JsonResponse
     {
