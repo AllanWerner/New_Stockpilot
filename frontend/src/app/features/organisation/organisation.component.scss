@@ -1,0 +1,43 @@
+@use '../../../styles/tokens' as t;
+
+.sp-organisation {
+  h1 {
+    font-family: t.$sp-font-heading;
+    margin-bottom: 4px;
+  }
+}
+
+.sp-organisation__subtitle {
+  color: t.$sp-text-secondary;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.sp-organisation__error {
+  color: t.$sp-status-rupture;
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.sp-organisation__loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.sp-organisation__tab {
+  padding-top: 16px;
+}
+
+.sp-organisation__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.sp-organisation__table {
+  width: 100%;
+  background-color: t.$sp-card;
+  border-radius: 8px;
+  overflow: hidden;
+}

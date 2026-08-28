@@ -31,6 +31,20 @@ final class CommandeRepository extends ServiceEntityRepository implements Comman
         return $this->findBy(['boutique' => $boutique], ['dateCreation' => 'DESC']);
     }
 
+    public function findByBoutiques(array $boutiques): array
+    {
+        if ([] === $boutiques) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.boutique IN (:boutiques)')
+            ->setParameter('boutiques', $boutiques)
+            ->orderBy('c.dateCreation', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function countEnCoursPourBoutiques(array $boutiques): int
     {
         if ([] === $boutiques) {
